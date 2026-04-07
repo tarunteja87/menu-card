@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Digital Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
   /* ============ THEME SYSTEM ============ */
   :root {
@@ -661,7 +664,7 @@
 
   <footer class="menu-footer">
     <div id="footer-info"></div>
-    <div style="margin-top:8px">Powered by <strong>Tarun Websites</strong></div>
+    <div style="margin-top:8px">Powered by <strong>MenuCard Pro</strong></div>
   </footer>
 </div>
 
@@ -686,7 +689,7 @@
     <div class="flex-row" style="justify-content:space-between;margin-bottom:20px">
       <div>
         <div class="admin-title">Menu Manager</div>
-        <div class="admin-subtitle">All changes save instantly to browser storage</div>
+        <div class="admin-subtitle" id="sync-status">Connecting to Firebase…</div>
       </div>
       <button class="btn btn-ghost" onclick="closeAdmin()">✕ Close</button>
     </div>
@@ -772,6 +775,36 @@
 
     <!-- SETTINGS TAB -->
     <div class="admin-section" id="tab-settings">
+      <!-- Firebase Config -->
+      <div style="background:var(--tag-bg);border:1px solid rgba(200,147,58,0.3);border-radius:12px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:14px;font-weight:600;color:var(--accent);margin-bottom:4px;">🔥 Firebase Realtime Database</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+          Paste your Firebase project config below. Data syncs instantly across all browsers and devices.<br>
+          <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent);">console.firebase.google.com</a> → Create project → Realtime Database → Get config
+        </div>
+        <div class="form-row">
+          <label>API Key</label>
+          <input type="text" id="fb-apiKey" placeholder="AIzaSy...">
+        </div>
+        <div class="form-row">
+          <label>Auth Domain</label>
+          <input type="text" id="fb-authDomain" placeholder="your-project.firebaseapp.com">
+        </div>
+        <div class="form-row">
+          <label>Database URL</label>
+          <input type="text" id="fb-databaseURL" placeholder="https://your-project-default-rtdb.firebaseio.com">
+        </div>
+        <div class="form-row">
+          <label>Project ID</label>
+          <input type="text" id="fb-projectId" placeholder="your-project-id">
+        </div>
+        <div id="fb-status" style="font-size:12px;margin-bottom:12px;display:none;padding:8px 12px;border-radius:8px;"></div>
+        <div class="flex-row">
+          <button class="btn btn-primary" onclick="saveFirebaseConfig()">Connect Firebase</button>
+          <button class="btn btn-ghost" onclick="disconnectFirebase()">Disconnect</button>
+        </div>
+      </div>
+
       <div class="form-row">
         <label>Change Admin Password</label>
         <input type="password" id="new-pw" placeholder="New password">
@@ -854,6 +887,120 @@
 
 <script>
 // ====================================================
+// FIREBASE SETUP
+// ====================================================
+const FB_CONFIG_KEY = "menucard_firebase_config";
+let db = null;
+let fbRef = null;
+let realtimeListener = null;
+let isSyncing = false; // prevent echo-loop when we write then receive our own update
+
+function loadFirebaseConfig() {
+  try { return JSON.parse(localStorage.getItem(FB_CONFIG_KEY)) || null; }
+  catch(e) { return null; }
+}
+function saveFirebaseConfig() {
+  const cfg = {
+    apiKey:      document.getElementById("fb-apiKey").value.trim(),
+    authDomain:  document.getElementById("fb-authDomain").value.trim(),
+    databaseURL: document.getElementById("fb-databaseURL").value.trim(),
+    projectId:   document.getElementById("fb-projectId").value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.databaseURL) {
+    showFbStatus("Please fill in at least API Key and Database URL.", "error");
+    return;
+  }
+  localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(cfg));
+  initFirebase(cfg);
+}
+function disconnectFirebase() {
+  if (realtimeListener && fbRef) fbRef.off("value", realtimeListener);
+  db = null; fbRef = null; realtimeListener = null;
+  localStorage.removeItem(FB_CONFIG_KEY);
+  setSyncStatus("local");
+  showFbStatus("Disconnected. Using local storage only.", "warn");
+}
+function showFbStatus(msg, type) {
+  const el = document.getElementById("fb-status");
+  if (!el) return;
+  el.style.display = "block";
+  el.style.background = type === "ok" ? "rgba(0,200,100,0.12)" : type === "error" ? "rgba(220,60,60,0.12)" : "rgba(200,147,58,0.12)";
+  el.style.color = type === "ok" ? "#4caf82" : type === "error" ? "#e06060" : "var(--accent)";
+  el.textContent = msg;
+}
+function setSyncStatus(mode) {
+  const el = document.getElementById("sync-status");
+  if (!el) return;
+  if (mode === "firebase") el.innerHTML = '🟢 Live sync via Firebase — changes appear on all devices instantly';
+  else if (mode === "local")  el.innerHTML = '🟡 Local only — changes won\'t sync to other browsers';
+  else                        el.innerHTML = '⏳ Connecting to Firebase…';
+}
+function populateFbForm() {
+  const cfg = loadFirebaseConfig();
+  if (!cfg) return;
+  document.getElementById("fb-apiKey").value      = cfg.apiKey      || "";
+  document.getElementById("fb-authDomain").value  = cfg.authDomain  || "";
+  document.getElementById("fb-databaseURL").value = cfg.databaseURL || "";
+  document.getElementById("fb-projectId").value   = cfg.projectId   || "";
+}
+
+function initFirebase(cfg) {
+  try {
+    // Tear down old listener
+    if (realtimeListener && fbRef) fbRef.off("value", realtimeListener);
+    // Delete existing app if any
+    try { firebase.app().delete(); } catch(e) {}
+    firebase.initializeApp(cfg);
+    db    = firebase.database();
+    fbRef = db.ref("menuData");
+
+    // ---- Realtime listener ----
+    realtimeListener = fbRef.on("value", snapshot => {
+      if (isSyncing) return; // our own write echoed back — ignore
+      const data = snapshot.val();
+      if (data && data.items && data.categories) {
+        // Merge: keep local password so it doesn't get overwritten by other sessions
+        const localPw = state.password;
+        state = data;
+        if (localPw) state.password = localPw; // password stays local
+        applyTheme(state.theme || "dark");
+        renderMenu();
+        if (document.getElementById("admin-overlay").classList.contains("open")) {
+          renderAdminItems();
+          renderCatEditor();
+          renderBrandingForm();
+          renderThemes();
+        }
+      } else {
+        // No data in Firebase yet — push current state up
+        pushToFirebase();
+      }
+      setSyncStatus("firebase");
+      showFbStatus("Connected! Data is syncing in real time.", "ok");
+    }, err => {
+      setSyncStatus("local");
+      showFbStatus("Firebase error: " + err.message, "error");
+    });
+  } catch(e) {
+    setSyncStatus("local");
+    showFbStatus("Config error: " + e.message, "error");
+  }
+}
+
+function pushToFirebase() {
+  if (!fbRef) return;
+  isSyncing = true;
+  // Never push the admin password to Firebase (security)
+  const toSave = Object.assign({}, state);
+  delete toSave.password;
+  fbRef.set(toSave).catch(e => {
+    showFbStatus("Save failed: " + e.message, "error");
+  }).finally(() => {
+    setTimeout(() => { isSyncing = false; }, 400);
+  });
+}
+
+// ====================================================
 // DATA DEFAULTS
 // ====================================================
 const DEFAULT_DATA = {
@@ -905,11 +1052,9 @@ function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_DATA));
-    // Migration: ensure all items have a type field
     if (state.items && Array.isArray(state.items)) {
       state.items.forEach(item => {
         if (!item.type) {
-          // Default to veg if not specified, unless it's clearly a non-veg category
           item.type = (item.cat && item.cat.includes("nonveg")) ? "nonveg" : "veg";
         }
       });
@@ -919,7 +1064,12 @@ function loadState() {
   }
 }
 function saveState() {
+  // Always keep a local copy (fallback + stores password locally)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Push to Firebase if connected
+  if (fbRef) {
+    pushToFirebase();
+  }
 }
 function resetToDefaults() {
   if (!confirm("Reset all data to demo defaults? This cannot be undone.")) return;
@@ -1440,6 +1590,7 @@ function openAdmin() {
   renderCatEditor();
   renderBrandingForm();
   renderThemes();
+  populateFbForm();
 }
 function closeAdmin() {
   document.getElementById("admin-overlay").classList.remove("open");
@@ -1551,6 +1702,16 @@ loadState();
 applyTheme(state.theme || "dark");
 renderMenu();
 setTimeout(initScrollSpy, 200);
+
+// Auto-connect Firebase if config was saved before
+(function() {
+  const cfg = loadFirebaseConfig();
+  if (cfg && cfg.apiKey && cfg.databaseURL) {
+    initFirebase(cfg);
+  } else {
+    setSyncStatus("local");
+  }
+})();
 
 // Close overlays on background click
 document.getElementById("login-overlay").addEventListener("click", e => {
