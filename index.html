@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ============ THEME SYSTEM ============ */
+  :root {
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --bg: #0f0e0c;
+    --bg2: #1a1814;
+    --bg3: #242220;
+    --surface: #2a2825;
+    --border: rgba(255,255,255,0.08);
+    --text: #f5f0e8;
+    --text2: #a89f8c;
+    --accent: #c8933a;
+    --accent2: #e8b86d;
+    --badge: #3d2a0e;
+    --badge-text: #e8b86d;
+    --card-radius: 16px;
+    --btn-radius: 8px;
+    --tag-bg: rgba(200,147,58,0.15);
+    --tag-text: #c8933a;
+    --hero-overlay: linear-gradient(to bottom, rgba(15,14,12,0.3) 0%, rgba(15,14,12,0.85) 100%);
+  }
+  .theme-light {
+    --bg: #faf8f4;
+    --bg2: #f2ede4;
+    --bg3: #e8e0d0;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --text: #1a1510;
+    --text2: #7a6f5e;
+    --accent: #b07d2e;
+    --accent2: #c8933a;
+    --badge: #fdf3e0;
+    --badge-text: #b07d2e;
+    --tag-bg: rgba(176,125,46,0.1);
+    --tag-text: #b07d2e;
+    --hero-overlay: linear-gradient(to bottom, rgba(250,248,244,0.2) 0%, rgba(250,248,244,0.9) 100%);
+  }
+  .theme-neon {
+    --font-display: 'Bebas Neue', cursive;
+    --font-body: 'Space Grotesk', sans-serif;
+    --bg: #080b12;
+    --bg2: #0e1220;
+    --bg3: #141828;
+    --surface: #111520;
+    --border: rgba(0,240,180,0.15);
+    --text: #e8f4ff;
+    --text2: #7a9ab8;
+    --accent: #00f0b4;
+    --accent2: #00c896;
+    --badge: #002820;
+    --badge-text: #00f0b4;
+    --tag-bg: rgba(0,240,180,0.1);
+    --tag-text: #00f0b4;
+    --hero-overlay: linear-gradient(to bottom, rgba(8,11,18,0.3) 0%, rgba(8,11,18,0.9) 100%);
+    --card-radius: 4px;
+    --btn-radius: 2px;
+  }
+  .theme-blush {
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --bg: #fdf6f0;
+    --bg2: #f7ece3;
+    --bg3: #eeddd1;
+    --surface: #ffffff;
+    --border: rgba(180,120,90,0.15);
+    --text: #2d1a10;
+    --text2: #9a7060;
+    --accent: #c0624a;
+    --accent2: #d4836e;
+    --badge: #fdeae4;
+    --badge-text: #c0624a;
+    --tag-bg: rgba(192,98,74,0.1);
+    --tag-text: #c0624a;
+    --hero-overlay: linear-gradient(to bottom, rgba(253,246,240,0.2) 0%, rgba(253,246,240,0.92) 100%);
+    --card-radius: 20px;
+    --btn-radius: 40px;
+  }
+  .theme-midnight {
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --bg: #05070f;
+    --bg2: #080d1a;
+    --bg3: #0d1424;
+    --surface: #101828;
+    --border: rgba(100,130,255,0.12);
+    --text: #dce8ff;
+    --text2: #6a80a8;
+    --accent: #7c9cff;
+    --accent2: #a0b8ff;
+    --badge: #111d3a;
+    --badge-text: #7c9cff;
+    --tag-bg: rgba(124,156,255,0.1);
+    --tag-text: #7c9cff;
+    --hero-overlay: linear-gradient(to bottom, rgba(5,7,15,0.3) 0%, rgba(5,7,15,0.88) 100%);
+    --card-radius: 12px;
+    --btn-radius: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  /* ============ ADMIN PANEL ============ */
+  #admin-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 9000;
+    backdrop-filter: blur(6px);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  #admin-overlay.open { display: flex; }
+  .admin-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 760px;
+    padding: 32px;
+    margin: auto;
+  }
+  .admin-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .admin-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .admin-tabs { display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+  .admin-tab {
+    padding: 8px 18px;
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .admin-tab.active, .admin-tab:hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .admin-section { display: none; }
+  .admin-section.active { display: block; }
+
+  .form-row { margin-bottom: 16px; }
+  .form-row label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--btn-radius);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-row textarea { min-height: 70px; resize: vertical; }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: var(--btn-radius);
+    border: none;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; border: 1px solid rgba(220,60,60,0.3); color: #e06060; }
+  .btn-danger:hover { background: rgba(220,60,60,0.1); }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+  .items-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; max-height: 340px; overflow-y: auto; }
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg3);
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+  }
+  .item-row input { padding: 6px 10px; font-size: 13px; }
+  .item-name-price { display: flex; flex-direction: column; gap: 4px; }
+  .item-row .item-img-url { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+
+  /* Category editor */
+  .cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+  }
+  .cat-row input { flex: 1; padding: 5px 8px; }
+  .cat-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Theme picker */
+  .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .theme-card {
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .theme-card:hover { transform: translateY(-2px); }
+  .theme-card.selected { border-color: var(--accent); }
+  .theme-preview { height: 70px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+  .theme-label { font-size: 12px; text-align: center; padding: 8px; background: var(--bg3); color: var(--text2); }
+
+  /* Item editor modal */
+  #item-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #item-modal-overlay.open { display: flex; }
+  .item-modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    padding: 28px;
+  }
+  .item-modal h3 { font-family: var(--font-display); font-size: 22px; margin-bottom: 20px; color: var(--text); }
+  .img-preview-wrap { position: relative; margin-bottom: 12px; }
+  .img-preview { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; display: block; background: var(--bg3); }
+  .img-placeholder { width: 100%; height: 180px; background: var(--bg3); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 13px; }
+
+  /* ============ LOGIN ============ */
+  #login-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 8000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  #login-overlay.open { display: flex; }
+  .login-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-box h2 { font-family: var(--font-display); font-size: 26px; margin-bottom: 6px; }
+  .login-box p { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .login-error { color: #e06060; font-size: 13px; margin-top: 10px; display: none; }
+
+  /* ============ PUBLIC MENU ============ */
+  .menu-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 60px;
+    backdrop-filter: blur(12px);
+  }
+  .menu-brand { font-family: var(--font-display); font-size: 22px; color: var(--text); }
+  .menu-brand span { color: var(--accent); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .admin-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .admin-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .hero-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: var(--hero-overlay);
+  }
+  .hero-content {
+    position: relative;
+    padding: 40px 32px;
+    max-width: 700px;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 5px 12px;
+    border-radius: 40px;
+    margin-bottom: 14px;
+    font-family: var(--font-body);
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 440px;
+    line-height: 1.6;
+  }
+
+  /* Category Nav */
+  .cat-controls {
+    display: flex;
+    justify-content: center;
+    padding: 12px 12px ;
+    gap: 12px;
+    background: var(--bg);
+    position: sticky;
+    top: 60px;
+    z-index: 95;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-toggle {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle-btn.active,
+  .toggle-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .cat-nav-wrap {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 108px;
+    z-index: 90;
+  }
+  .cat-nav {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0 20px;
+    scrollbar-width: none;
+  }
+  .cat-nav::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .cat-pill:hover { color: var(--text); }
+  .cat-pill.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Menu sections */
+  .menu-main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+  .menu-section { margin-bottom: 64px; }
+  .section-header { margin-bottom: 32px; }
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--font-body);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 4vw, 38px);
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .section-desc { font-size: 14px; color: var(--text2); margin-top: 8px; line-height: 1.6; }
+
+  /* Menu grid */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .menu-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+  .menu-card:hover { transform: translateY(-4px); }
+  .card-img-wrap { position: relative; overflow: hidden; height: 190px; }
+  .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; display: block; }
+  .menu-card:hover .card-img { transform: scale(1.05); }
+  .card-no-img { width: 100%; height: 190px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+  .card-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: var(--badge);
+    color: var(--badge-text);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 40px;
+    font-family: var(--font-body);
+  }
+  .card-body { padding: 18px 20px; }
+  .card-name {
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .card-desc { font-size: 13px; color: var(--text2); line-height: 1.55; margin-bottom: 14px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .card-price {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--accent);
+    font-style: italic;
+  }
+  .card-pricing-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .pricing-option {
+    font-size: 12px;
+    padding: 4px 9px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border-radius: 20px;
+    font-family: var(--font-body);
+    letter-spacing: 0.03em;
+  }
+  .pricing-option-size {
+    font-weight: 600;
+    margin-right: 2px;
+  }
+  .pricing-option-price {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .card-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border-radius: 40px;
+    font-family: var(--font-body);
+    letter-spacing: 0.05em;
+  }
+
+  /* Footer */
+  .menu-footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .menu-footer strong { color: var(--text); }
+
+  /* Utilities */
+  .flex-row { display: flex; gap: 10px; align-items: center; }
+  .gap-12 { gap: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-8 { margin-top: 8px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .text-sm { font-size: 13px; color: var(--text2); }
+  .bold { font-weight: 600; color: var(--text); }
+
+  /* Admin item list compact */
+  .admin-item-list { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
+  .admin-item-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .admin-item-card:hover { border-color: var(--accent); }
+  .admin-item-thumb {
+    width: 52px; height: 52px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: var(--bg2);
+  }
+  .admin-item-info { flex: 1; min-width: 0; }
+  .admin-item-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .admin-item-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .admin-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Info banner */
+  .info-banner {
+    background: var(--tag-bg);
+    border: 1px solid rgba(200,147,58,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .info-banner strong { color: var(--accent); }
+
+  /* Restaurant info section */
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) {
+    .form-grid-2 { grid-template-columns: 1fr; }
+    .item-row { grid-template-columns: 1fr auto; }
+  }
+
+  /* scroll padding for sticky nav */
+  [data-section] { scroll-margin-top: 130px; }
+
+  /* Neon theme special effects */
+  .theme-neon .menu-card { box-shadow: 0 0 20px rgba(0,240,180,0.04); }
+  .theme-neon .menu-card:hover { box-shadow: 0 0 30px rgba(0,240,180,0.12); }
+  .theme-neon .card-price { font-style: normal; letter-spacing: 0.05em; }
+  .theme-neon .hero-title { font-size: clamp(48px, 8vw, 96px); letter-spacing: 0.02em; }
+
+  /* Blush theme */
+  .theme-blush .card-name { font-style: italic; }
+  .theme-blush .hero-title { font-weight: 400; font-style: italic; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero { height: 300px; }
+    .hero-content { padding: 24px 20px; }
+    .menu-main { padding: 32px 16px 60px; }
+    .admin-panel { padding: 20px; }
+    .theme-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body class="theme-dark">
+
+<!-- ====== PUBLIC MENU ====== -->
+<div id="menu-root">
+  <!-- Topbar -->
+  <nav class="menu-topbar">
+    <div class="menu-brand" id="brand-name">The Golden <span>Plate</span></div>
+    <div class="topbar-right">
+      <div id="topbar-hours" style="font-size:12px;color:var(--text2)"></div>
+      <button class="admin-btn" onclick="showLogin()">Admin</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero" id="hero-section">
+    <img class="hero-img" id="hero-img" src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80" alt="Restaurant hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tag" id="hero-tag">Fine Dining Experience</div>
+      <h1 class="hero-title" id="hero-title">Crafted with<br><em>Passion</em></h1>
+      <p class="hero-sub" id="hero-sub">Every dish tells a story of local ingredients, seasonal flavors, and time-honored techniques.</p>
+    </div>
+  </div>
+
+  <!-- Menu Filter -->
+  <div class="cat-controls">
+    <div class="filter-toggle" id="filter-toggle"></div>
+  </div>
+
+  <!-- Category Nav -->
+  <div class="cat-nav-wrap">
+    <div class="cat-nav" id="cat-nav"></div>
+  </div>
+
+  <!-- Menu Items -->
+  <main class="menu-main" id="menu-main"></main>
+
+  <footer class="menu-footer">
+    <div id="footer-info"></div>
+    <div style="margin-top:8px">Powered by <strong>MenuCard Pro</strong></div>
+  </footer>
+</div>
+
+<!-- ====== LOGIN OVERLAY ====== -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>Admin Access</h2>
+    <p>Enter your password to manage the menu</p>
+    <div class="form-row">
+      <input type="password" id="login-pw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%" onclick="closeLogin()">Cancel</button>
+    <p style="margin-top:20px;font-size:11px;color:var(--text2)">Default password: <strong style="color:var(--accent)">admin123</strong></p>
+  </div>
+</div>
+
+<!-- ====== ADMIN PANEL ====== -->
+<div id="admin-overlay">
+  <div class="admin-panel">
+    <div class="flex-row" style="justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="admin-title">Menu Manager</div>
+        <div class="admin-subtitle">All changes save instantly to browser storage</div>
+      </div>
+      <button class="btn btn-ghost" onclick="closeAdmin()">✕ Close</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('items')">Menu Items</button>
+      <button class="admin-tab" onclick="switchTab('categories')">Categories</button>
+      <button class="admin-tab" onclick="switchTab('branding')">Branding</button>
+      <button class="admin-tab" onclick="switchTab('themes')">Themes</button>
+      <button class="admin-tab" onclick="switchTab('settings')">Settings</button>
+    </div>
+
+    <!-- ITEMS TAB -->
+    <div class="admin-section active" id="tab-items">
+      <div class="info-banner">
+        <strong>Images:</strong> Paste any public image URL (Unsplash, your CDN, Google Drive public link, etc.). Changes save automatically.
+      </div>
+      <div class="flex-row" style="margin-bottom:16px">
+        <select id="filter-cat" onchange="renderAdminItems()" style="flex:1;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;">
+          <option value="">All Categories</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddItem()">+ Add Item</button>
+      </div>
+      <div class="admin-item-list" id="admin-item-list"></div>
+    </div>
+
+    <!-- CATEGORIES TAB -->
+    <div class="admin-section" id="tab-categories">
+      <div class="info-banner"><strong>Hierarchical Categories:</strong> Create parent categories (e.g., Vegetarian, Non-Veg) and add subcategories (e.g., Starters, Main Course) under each. Items are assigned to subcategories.</div>
+      <div class="cat-list" id="cat-editor-list"></div>
+      <div class="flex-row mt-8">
+        <input type="text" id="new-cat-name" placeholder="New parent category name..." style="flex:1;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;">
+        <button class="btn btn-primary" onclick="addCategory()">Add Parent</button>
+      </div>
+    </div>
+
+    <!-- BRANDING TAB -->
+    <div class="admin-section" id="tab-branding">
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Restaurant Name</label>
+          <input type="text" id="b-name" placeholder="The Golden Plate">
+        </div>
+        <div class="form-row">
+          <label>Tagline / Tag</label>
+          <input type="text" id="b-tag" placeholder="Fine Dining Experience">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Hero Title (use line breaks with |)</label>
+        <input type="text" id="b-hero-title" placeholder="Crafted with|Passion">
+      </div>
+      <div class="form-row">
+        <label>Hero Subtitle</label>
+        <textarea id="b-hero-sub" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <label>Hero Image URL</label>
+        <input type="url" id="b-hero-img" placeholder="https://...">
+      </div>
+      <div class="form-row">
+        <label>Opening Hours</label>
+        <input type="text" id="b-hours" placeholder="Mon–Sun: 11am – 10pm">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Phone</label>
+          <input type="text" id="b-phone" placeholder="+1 234 567 8900">
+        </div>
+        <div class="form-row">
+          <label>Address</label>
+          <input type="text" id="b-address" placeholder="123 Main St, City">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveBranding()">Save Branding</button>
+    </div>
+
+    <!-- THEMES TAB -->
+    <div class="admin-section" id="tab-themes">
+      <div class="info-banner">Themes instantly change fonts, colors, and card shapes across your entire menu.</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="admin-section" id="tab-settings">
+      <div class="form-row">
+        <label>Change Admin Password</label>
+        <input type="password" id="new-pw" placeholder="New password">
+      </div>
+      <div class="form-row">
+        <input type="password" id="confirm-pw" placeholder="Confirm password">
+      </div>
+      <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+      <hr class="divider">
+      <div class="form-row">
+        <label>Export Menu Data (JSON)</label>
+        <button class="btn btn-ghost" onclick="exportData()">Download JSON</button>
+      </div>
+      <div class="form-row">
+        <label>Import Menu Data (JSON)</label>
+        <input type="file" id="import-file" accept=".json" onchange="importData(event)">
+      </div>
+      <hr class="divider">
+      <button class="btn btn-danger" onclick="resetToDefaults()">Reset to Default Demo Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== ITEM EDIT MODAL ====== -->
+<div id="item-modal-overlay">
+  <div class="item-modal">
+    <h3 id="item-modal-title">Add Menu Item</h3>
+    <input type="hidden" id="edit-item-id">
+
+    <div class="img-preview-wrap">
+      <div class="img-placeholder" id="img-placeholder">No image — paste URL below</div>
+      <img id="img-preview" class="img-preview" style="display:none" alt="Preview">
+    </div>
+
+    <div class="form-row">
+      <label>Image URL</label>
+      <input type="url" id="edit-img" placeholder="https://images.unsplash.com/..." oninput="previewImg(this.value)">
+    </div>
+    <div class="form-row">
+      <label>Item Name *</label>
+      <input type="text" id="edit-name" placeholder="e.g. Grilled Salmon">
+    </div>
+    <div class="form-row">
+      <label>Size Options & Pricing *</label>
+      <div id="pricing-options-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addPricingOption()">+ Add Size Option</button>
+    </div>
+    <div class="form-row">
+      <label>Description</label>
+      <textarea id="edit-desc" placeholder="Short appetizing description..."></textarea>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-row">
+        <label>Type *</label>
+        <select id="edit-type" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;">
+          <option value="veg">Vegetarian</option>
+          <option value="nonveg">Non-Vegetarian</option>
+          <option value="na">NA (Drinks, Desserts, etc.)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Badge (optional)</label>
+        <input type="text" id="edit-badge" placeholder="e.g. Chef's Special, New, Vegan">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Category</label>
+      <select id="edit-cat" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;"></select>
+    </div>
+    <div class="form-row">
+      <label>Tags (comma separated)</label>
+      <input type="text" id="edit-tags" placeholder="e.g. Gluten Free, Spicy">
+    </div>
+    <div class="flex-row mt-16">
+      <button class="btn btn-primary" style="flex:1" onclick="saveItem()">Save Item</button>
+      <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====================================================
+// DATA DEFAULTS
+// ====================================================
+const DEFAULT_DATA = {
+  password: "admin123",
+  theme: "dark",
+  branding: {
+    name: "The Golden Plate",
+    tag: "Fine Dining Experience",
+    heroTitle: "Crafted with|Passion",
+    heroSub: "Every dish tells a story of local ingredients, seasonal flavors, and time-honored techniques.",
+    heroImg: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80",
+    hours: "Mon–Sun: 11am – 10pm",
+    phone: "+1 234 567 8900",
+    address: "123 Main Street, Downtown"
+  },
+  menuFilter: "all",
+  categories: [
+    { id: "veg", name: "Vegetarian", parent: null },
+    { id: "veg-starters", name: "Starters", parent: "veg" },
+    { id: "veg-mains", name: "Main Course", parent: "veg" },
+    { id: "nonveg", name: "Non-Vegetarian", parent: null },
+    { id: "nonveg-starters", name: "Starters", parent: "nonveg" },
+    { id: "nonveg-mains", name: "Main Course", parent: "nonveg" },
+    { id: "desserts", name: "Desserts", parent: null },
+    { id: "drinks", name: "Drinks", parent: null }
+  ],
+  items: [
+    { id: "i1", name: "Burrata & Heirloom Tomatoes", type: "veg", pricing: [{size: "Regular", price: "$18"}], desc: "Creamy burrata with heirloom tomatoes, fresh basil, aged balsamic and sea salt.", img: "https://images.unsplash.com/photo-1539800688453-e8093f5d609c?w=600&q=80", cat: "veg-starters", badge: "Chef's Pick", tags: ["Vegetarian", "Gluten Free"] },
+    { id: "i2", name: "Tuna Tartare", type: "nonveg", pricing: [{size: "Regular", price: "$22"}], desc: "Yellowfin tuna with avocado, sesame, micro herbs and yuzu dressing.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80", cat: "nonveg-starters", badge: "", tags: ["Pescatarian"] },
+    { id: "i3", name: "Truffle Arancini", type: "veg", pricing: [{size: "Regular", price: "$16"}], desc: "Crispy risotto balls with black truffle, parmesan and saffron aioli.", img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80", cat: "veg-starters", badge: "New", tags: ["Vegetarian"] },
+    { id: "i4", name: "Pan-Seared Duck Breast", type: "nonveg", pricing: [{size: "Regular", price: "$38"}], desc: "Duck breast with cherry reduction, dauphinoise potato and wilted spinach.", img: "https://images.unsplash.com/photo-1510626176961-4b57d4fbad03?w=600&q=80", cat: "nonveg-mains", badge: "", tags: [] },
+    { id: "i5", name: "Grilled Sea Bass", type: "nonveg", pricing: [{size: "Regular", price: "$42"}], desc: "Wild caught sea bass with lemon butter, capers, samphire and roasted fennel.", img: "https://images.unsplash.com/photo-1519984388953-d2406bc725e1?w=600&q=80", cat: "nonveg-mains", badge: "Seasonal", tags: ["Gluten Free"] },
+    { id: "i6", name: "Wagyu Beef Tenderloin", type: "nonveg", pricing: [{size: "Regular", price: "$68"}], desc: "A5 wagyu with red wine jus, roasted bone marrow and truffle mash.", img: "https://images.unsplash.com/photo-1544025162-d76538a53cce?w=600&q=80", cat: "nonveg-mains", badge: "Signature", tags: ["Gluten Free"] },
+    { id: "i7", name: "Wild Mushroom Risotto", type: "veg", pricing: [{size: "Regular", price: "$28"}], desc: "Arborio rice with porcini, chanterelle, parmesan and black truffle oil.", img: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&q=80", cat: "veg-mains", badge: "", tags: ["Vegetarian", "Gluten Free"] },
+    { id: "i8", name: "Crème Brûlée", type: "na", pricing: [{size: "Regular", price: "$14"}], desc: "Classic vanilla custard with caramelized sugar and seasonal berry compote.", img: "https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=600&q=80", cat: "desserts", badge: "", tags: ["Vegetarian"] },
+    { id: "i9", name: "Chocolate Fondant", type: "na", pricing: [{size: "Regular", price: "$16"}], desc: "Dark 70% chocolate fondant with salted caramel core and vanilla bean ice cream.", img: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80", cat: "desserts", badge: "Must Try", tags: ["Vegetarian"] },
+    { id: "i10", name: "Aged Negroni", type: "na", pricing: [{size: "Regular", price: "$18"}], desc: "Barrel-aged Campari, vermouth rosso, gin, orange twist. Stirred.", img: "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=600&q=80", cat: "drinks", badge: "", tags: [] },
+    { id: "i11", name: "Passion Mule", type: "na", pricing: [{size: "Regular", price: "$14"}], desc: "Passionfruit, ginger beer, lime and fresh mint over crushed ice.", img: "https://images.unsplash.com/photo-1582106245687-cbb466a9f07f?w=600&q=80", cat: "drinks", badge: "Popular", tags: ["Non-Alcoholic option"] }
+  ]
+};
+
+// ====================================================
+// STATE
+// ====================================================
+let state = {};
+const STORAGE_KEY = "menucard_pro_data";
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+    // Migration: ensure all items have a type field
+    if (state.items && Array.isArray(state.items)) {
+      state.items.forEach(item => {
+        if (!item.type) {
+          // Default to veg if not specified, unless it's clearly a non-veg category
+          item.type = (item.cat && item.cat.includes("nonveg")) ? "nonveg" : "veg";
+        }
+      });
+    }
+  } catch(e) {
+    state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function resetToDefaults() {
+  if (!confirm("Reset all data to demo defaults? This cannot be undone.")) return;
+  state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  saveState();
+  renderMenu();
+  renderAdminItems();
+  renderCatEditor();
+  renderBrandingForm();
+  renderThemes();
+  alert("Reset complete!");
+}
+
+// ====================================================
+// THEMES
+// ====================================================
+const THEMES = [
+  { id: "dark", label: "Ember Gold", bg: "#0f0e0c", surface: "#2a2825", accent: "#c8933a", text: "#f5f0e8" },
+  { id: "light", label: "Cream & Gold", bg: "#faf8f4", surface: "#ffffff", accent: "#b07d2e", text: "#1a1510" },
+  { id: "neon", label: "Cyber Neon", bg: "#080b12", surface: "#111520", accent: "#00f0b4", text: "#e8f4ff" },
+  { id: "blush", label: "Blush & Rose", bg: "#fdf6f0", surface: "#ffffff", accent: "#c0624a", text: "#2d1a10" },
+  { id: "midnight", label: "Midnight Blue", bg: "#05070f", surface: "#101828", accent: "#7c9cff", text: "#dce8ff" },
+];
+
+function applyTheme(themeId) {
+  document.body.className = "theme-" + themeId;
+  state.theme = themeId;
+  saveState();
+  renderThemes();
+}
+
+function renderThemes() {
+  const grid = document.getElementById("theme-grid");
+  grid.innerHTML = THEMES.map(t => `
+    <div class="theme-card ${state.theme === t.id ? 'selected' : ''}" onclick="applyTheme('${t.id}')">
+      <div class="theme-preview" style="background:${t.bg};color:${t.text};font-family:${t.id==='neon'?'monospace':'serif'}">
+        <span style="color:${t.accent}">Aa</span>&nbsp;${t.label.split(' ')[0]}
+      </div>
+      <div class="theme-label">${t.label}</div>
+    </div>
+  `).join("");
+}
+
+// ====================================================
+// MENU RENDER
+// ====================================================
+function renderMenu() {
+  const b = state.branding;
+  // brand
+  const brandEl = document.getElementById("brand-name");
+  const parts = b.name.split(" ");
+  brandEl.innerHTML = parts.slice(0,-1).join(" ") + " <span>" + parts[parts.length-1] + "</span>";
+  // hero
+  document.getElementById("hero-img").src = b.heroImg || DEFAULT_DATA.branding.heroImg;
+  document.getElementById("hero-tag").textContent = b.tag;
+  const titleParts = (b.heroTitle || "").split("|");
+  document.getElementById("hero-title").innerHTML = titleParts.join("<br>");
+  document.getElementById("hero-sub").textContent = b.heroSub;
+  document.getElementById("topbar-hours").textContent = b.hours || "";
+
+  // footer
+  document.getElementById("footer-info").innerHTML =
+    `<strong>${b.name}</strong> &nbsp;·&nbsp; ${b.phone || ""} &nbsp;·&nbsp; ${b.address || ""}`;
+
+  renderFilterToggle();
+  const menuFilter = state.menuFilter || "all";
+  const nav = document.getElementById("cat-nav");
+  const parentCats = state.categories.filter(c => !c.parent);
+  const visibleParentCats = parentCats.filter(parent => {
+    if (menuFilter === "all") return true;
+    if (parent.id === menuFilter) return true;
+    const children = state.categories.filter(c => c.parent === parent.id);
+    // Check if children have matching items
+    if (children.some(child => state.items.some(i => i.cat === child.id && i.type === menuFilter))) return true;
+    // Check if parent itself has direct items with matching type (for top-level categories like drinks/desserts)
+    return state.items.some(i => i.cat === parent.id && i.type === menuFilter);
+  });
+  const visibleCatIds = state.categories
+    .filter(c => menuFilter === "all" || c.id === menuFilter || c.parent === menuFilter)
+    .map(c => c.id);
+
+  const activeCats = state.categories.filter(c => visibleCatIds.includes(c.id) && state.items.some(i => i.cat === c.id && (menuFilter === "all" || i.type === menuFilter)));
+  
+  nav.innerHTML = visibleParentCats.map((parent, i) => {
+    const subCats = state.categories.filter(c => c.parent === parent.id && activeCats.some(ac => ac.id === c.id));
+    const firstSubCat = subCats[0];
+    const displayCat = firstSubCat || parent;
+    if (!state.items.some(it => it.cat === displayCat.id)) return "";
+    return `<button class="cat-pill ${i===0?'active':''}" onclick="scrollToSection('${displayCat.id}',this)">${parent.name}</button>`;
+  }).join("");
+
+  // menu sections - group by parent category
+  const main = document.getElementById("menu-main");
+  main.innerHTML = visibleParentCats.map(parent => {
+    const children = state.categories.filter(c => c.parent === parent.id);
+    const itemsByParent = state.items.filter(i => {
+      if (menuFilter !== "all" && i.type !== menuFilter) return false;
+      const cat = state.categories.find(c => c.id === i.cat);
+      const root = cat ? (cat.parent || cat.id) : null;
+      return root === parent.id;
+    });
+    if (!itemsByParent.length) return "";
+    
+    // If parent has subcategories, group items by subcategory
+    if (children.length > 0) {
+      const childSections = children.map(child => {
+        const items = state.items.filter(i => i.cat === child.id && (menuFilter === "all" || i.type === menuFilter));
+        if (!items.length) return "";
+        return `
+          <section class="menu-section" data-section="${child.id}" id="section-${child.id}">
+            <div class="section-header">
+              <div class="section-eyebrow">${parent.name} → ${child.name}</div>
+              <h2 class="section-title">${child.name}</h2>
+            </div>
+            <div class="menu-grid">
+              ${items.map(item => itemCard(item)).join("")}
+            </div>
+          </section>
+        `;
+      }).join("");
+      return childSections;
+    } else {
+      // No subcategories, just show parent
+      return `
+        <section class="menu-section" data-section="${parent.id}" id="section-${parent.id}">
+          <div class="section-header">
+            <div class="section-eyebrow">${parent.name}</div>
+            <h2 class="section-title">${parent.name}</h2>
+          </div>
+          <div class="menu-grid">
+            ${itemsByParent.map(item => itemCard(item)).join("")}
+          </div>
+        </section>
+      `;
+    }
+  }).join("");
+}
+
+function renderFilterToggle() {
+  const toggle = document.getElementById("filter-toggle");
+  const filter = state.menuFilter || "all";
+  if (!toggle) return;
+  const buttons = [
+    { id: "all", label: "All" },
+    { id: "veg", label: "Veg" },
+    { id: "nonveg", label: "Non-Veg" }
+  ];
+  toggle.innerHTML = buttons.map(btn => `
+    <button class="toggle-btn ${filter === btn.id ? 'active' : ''}" onclick="applyMenuFilter('${btn.id}')">${btn.label}</button>
+  `).join("");
+}
+
+function applyMenuFilter(filter) {
+  state.menuFilter = filter;
+  saveState();
+  renderMenu();
+}
+
+function itemCard(item) {
+  const img = item.img
+    ? `<img class="card-img" src="${escHtml(item.img)}" alt="${escHtml(item.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : "";
+  const tags = (item.tags||[]).map(t => `<span class="card-tag">${escHtml(t)}</span>`).join("");
+  const pricing = item.pricing || (item.price ? [{size: "Regular", price: item.price}] : []);
+  const pricingHtml = pricing.map(p => `<span class="pricing-option"><span class="pricing-option-size">${escHtml(p.size)}:</span> <span class="pricing-option-price">${escHtml(p.price)}</span></span>`).join("");
+  const hasPricing = pricing.length > 0;
+  
+  // Add type label (only for veg/nonveg, not for na)
+  const typeLabel = (item.type === "veg" || item.type === "nonveg")
+    ? `<div class="card-type-label" style="position:absolute;bottom:10px;right:10px;font-size:11px;padding:4px 10px;background:${item.type === 'veg' ? 'rgba(76,175,80,0.9)' : 'rgba(244,67,54,0.9)'};color:white;border-radius:12px;font-weight:600;">${item.type === 'veg' ? '🥬 Veg' : '🍗 Non-Veg'}</div>`
+    : "";
+  
+  return `
+    <div class="menu-card" style="position:relative;">
+      <div class="card-img-wrap">
+        ${item.img ? `<img class="card-img" src="${escHtml(item.img)}" alt="${escHtml(item.name)}" loading="lazy">` : `<div class="card-no-img">🍽️</div>`}
+        ${item.badge ? `<div class="card-badge">${escHtml(item.badge)}</div>` : ""}
+        ${typeLabel}
+      </div>
+      <div class="card-body">
+        <div class="card-name">${escHtml(item.name)}</div>
+        <div class="card-desc">${escHtml(item.desc||"")}</div>
+        <div class="card-footer">
+          ${hasPricing ? `<div class="card-pricing-options">${pricingHtml}</div>` : '<div class="card-price">—</div>'}
+          <div class="card-tags">${tags}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function scrollToSection(catId, btn) {
+  document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  const el = document.getElementById("section-" + catId);
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+}
+
+// ====================================================
+// ADMIN ITEMS
+// ====================================================
+function renderAdminItems() {
+  const filterCat = document.getElementById("filter-cat").value;
+  const select = document.getElementById("filter-cat");
+  const parentCats = state.categories.filter(c => !c.parent);
+  
+  let options = '<option value="">All Categories</option>';
+  parentCats.forEach(parent => {
+    const children = state.categories.filter(c => c.parent === parent.id);
+    if (children.length > 0) {
+      children.forEach(child => {
+        options += `<option value="${child.id}" ${filterCat===child.id?'selected':''}>${parent.name} → ${child.name}</option>`;
+      });
+    } else {
+      options += `<option value="${parent.id}" ${filterCat===parent.id?'selected':''}>${parent.name}</option>`;
+    }
+  });
+  select.innerHTML = options;
+  select.value = filterCat;
+
+  const list = document.getElementById("admin-item-list");
+  const items = filterCat ? state.items.filter(i => i.cat === filterCat) : state.items;
+  if (!items.length) {
+    list.innerHTML = `<div class="text-sm" style="padding:16px;text-align:center">No items yet. Click "+ Add Item" to get started.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(item => {
+    const cat = state.categories.find(c => c.id === item.cat);
+    const parent = cat && cat.parent ? state.categories.find(c => c.id === cat.parent) : null;
+    const catName = parent ? `${parent.name} → ${cat.name}` : cat ? cat.name : item.cat;
+    const pricing = item.pricing || (item.price ? [{size: "Regular", price: item.price}] : []);
+    const priceStr = pricing.map(p => `${p.size}: ${p.price}`).join(" • ");
+    return `
+      <div class="admin-item-card">
+        ${item.img
+          ? `<img class="admin-item-thumb" src="${escHtml(item.img)}" alt="${escHtml(item.name)}">`
+          : `<div class="admin-item-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px">🍽️</div>`}
+        <div class="admin-item-info">
+          <div class="admin-item-name">${escHtml(item.name)}</div>
+          <div class="admin-item-meta">${catName} &nbsp;·&nbsp; ${escHtml(priceStr)}</div>
+        </div>
+        <div class="admin-item-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openEditItem('${item.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Del</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openAddItem() {
+  document.getElementById("item-modal-title").textContent = "Add Menu Item";
+  document.getElementById("edit-item-id").value = "";
+  document.getElementById("edit-name").value = "";
+  document.getElementById("edit-desc").value = "";
+  document.getElementById("edit-type").value = "veg";
+  document.getElementById("edit-badge").value = "";
+  document.getElementById("edit-tags").value = "";
+  document.getElementById("edit-img").value = "";
+  previewImg("");
+  populateCatSelect();
+  // Initialize with one empty pricing option
+  window.editingPricing = [{size: "", price: ""}];
+  renderPricingOptions();
+  document.getElementById("item-modal-overlay").classList.add("open");
+}
+
+function openEditItem(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById("item-modal-title").textContent = "Edit Item";
+  document.getElementById("edit-item-id").value = id;
+  document.getElementById("edit-name").value = item.name;
+  document.getElementById("edit-desc").value = item.desc || "";
+  document.getElementById("edit-type").value = item.type || "veg";
+  document.getElementById("edit-badge").value = item.badge || "";
+  document.getElementById("edit-tags").value = (item.tags||[]).join(", ");
+  document.getElementById("edit-img").value = item.img || "";
+  previewImg(item.img || "");
+  populateCatSelect(item.cat);
+  // Load pricing
+  const pricing = item.pricing || (item.price ? [{size: "Regular", price: item.price}] : []);
+  window.editingPricing = JSON.parse(JSON.stringify(pricing));
+  renderPricingOptions();
+  document.getElementById("item-modal-overlay").classList.add("open");
+}
+
+function populateCatSelect(selected) {
+  const sel = document.getElementById("edit-cat");
+  const parentCats = state.categories.filter(c => !c.parent);
+  let options = "";
+  
+  parentCats.forEach(parent => {
+    const children = state.categories.filter(c => c.parent === parent.id);
+    if (children.length > 0) {
+      // Show parent as optgroup with subcategories
+      children.forEach(child => {
+        options += `<option value="${child.id}" ${selected===child.id?'selected':''}>${parent.name} → ${child.name}</option>`;
+      });
+    } else {
+      // Show parent without subcategories
+      options += `<option value="${parent.id}" ${selected===parent.id?'selected':''}>${parent.name}</option>`;
+    }
+  });
+  
+  sel.innerHTML = options || '<option value="">Select Category</option>';
+}
+
+function closeItemModal() {
+  document.getElementById("item-modal-overlay").classList.remove("open");
+}
+
+function saveItem() {
+  const id = document.getElementById("edit-item-id").value;
+  const name = document.getElementById("edit-name").value.trim();
+  const pricing = (window.editingPricing || []).filter(p => p.size.trim() && p.price.trim()).map(p => ({
+    size: p.size.trim(),
+    price: p.price.trim()
+  }));
+  if (!name || !pricing.length) { alert("Name and at least one size/price option are required."); return; }
+
+  const itemData = {
+    id: id || "i" + Date.now(),
+    name,
+    type: document.getElementById("edit-type").value,
+    pricing,
+    desc: document.getElementById("edit-desc").value.trim(),
+    badge: document.getElementById("edit-badge").value.trim(),
+    tags: document.getElementById("edit-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
+    img: document.getElementById("edit-img").value.trim(),
+    cat: document.getElementById("edit-cat").value,
+  };
+
+  if (id) {
+    const idx = state.items.findIndex(i => i.id === id);
+    if (idx > -1) state.items[idx] = itemData;
+  } else {
+    state.items.push(itemData);
+  }
+  saveState();
+  renderMenu();
+  renderAdminItems();
+  closeItemModal();
+}
+
+function deleteItem(id) {
+  if (!confirm("Delete this item?")) return;
+  state.items = state.items.filter(i => i.id !== id);
+  saveState();
+  renderMenu();
+  renderAdminItems();
+}
+
+function previewImg(url) {
+  const preview = document.getElementById("img-preview");
+  const placeholder = document.getElementById("img-placeholder");
+  if (url) {
+    preview.src = url;
+    preview.style.display = "block";
+    placeholder.style.display = "none";
+  } else {
+    preview.style.display = "none";
+    placeholder.style.display = "flex";
+  }
+}
+
+// ====================================================
+// CATEGORIES
+// ====================================================
+function renderCatEditor() {
+  const list = document.getElementById("cat-editor-list");
+  const colors = ["#c8933a","#00c896","#7c9cff","#c0624a","#a060d0","#60b0c0"];
+  const parentCats = state.categories.filter(c => !c.parent);
+  
+  list.innerHTML = parentCats.map((parent, i) => {
+    const children = state.categories.filter(c => c.parent === parent.id);
+    const html = `
+      <div style="margin-bottom: 12px;">
+        <div class="cat-row" style="background: rgba(200,147,58,0.1); margin-bottom: 6px;">
+          <div class="cat-dot" style="background:${colors[i%colors.length]}"></div>
+          <input type="text" value="${escHtml(parent.name)}" onchange="renameCategory('${parent.id}',this.value)" style="font-weight: 600;">
+          <span class="text-sm">${state.items.filter(it => it.cat === parent.id || children.some(ch => ch.id === it.cat)).length} items</span>
+          <button class="btn btn-danger btn-sm" onclick="deleteCategory('${parent.id}')">Remove</button>
+        </div>
+        ${children.map((child, j) => `
+          <div class="cat-row" style="margin-left: 24px; margin-bottom: 4px;">
+            <div class="cat-dot" style="background:${colors[(i+j+1)%colors.length]}"></div>
+            <input type="text" value="${escHtml(child.name)}" onchange="renameCategory('${child.id}',this.value)">
+            <span class="text-sm">${state.items.filter(it => it.cat === child.id).length} items</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${child.id}')">Remove</button>
+          </div>
+        `).join("")}
+        <div style="margin-left: 24px; margin-top: 4px;">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addSubcategory('${parent.id}')">+ Add Subcategory</button>
+        </div>
+      </div>
+    `;
+    return html;
+  }).join("");
+}
+
+function addCategory() {
+  const name = document.getElementById("new-cat-name").value.trim();
+  if (!name) return;
+  const id = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g,"") + "_" + Date.now();
+  state.categories.push({ id, name, parent: null });
+  document.getElementById("new-cat-name").value = "";
+  saveState();
+  renderCatEditor();
+  renderMenu();
+  renderAdminItems();
+}
+
+function addSubcategory(parentId) {
+  const name = prompt("Enter subcategory name (e.g., Starters, Main Course):");
+  if (!name) return;
+  const id = parentId + "_" + name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g,"");
+  state.categories.push({ id, name: name.trim(), parent: parentId });
+  saveState();
+  renderCatEditor();
+  renderMenu();
+  renderAdminItems();
+}
+
+function renameCategory(id, name) {
+  const cat = state.categories.find(c => c.id === id);
+  if (cat) { cat.name = name; saveState(); renderMenu(); }
+}
+
+function deleteCategory(id) {
+  const cat = state.categories.find(c => c.id === id);
+  const isParent = state.categories.some(c => c.parent === id);
+  const itemCount = state.items.filter(i => i.cat === id).length;
+  
+  if (isParent) {
+    alert("Cannot delete a category with subcategories. Remove subcategories first.");
+    return;
+  }
+  if (itemCount && !confirm(`This category has ${itemCount} items. They will become uncategorized. Continue?`)) return;
+  
+  state.categories = state.categories.filter(c => c.id !== id);
+  saveState();
+  renderCatEditor();
+  renderMenu();
+  renderAdminItems();
+}
+
+// ====================================================
+// BRANDING
+// ====================================================
+function renderBrandingForm() {
+  const b = state.branding;
+  document.getElementById("b-name").value = b.name||"";
+  document.getElementById("b-tag").value = b.tag||"";
+  document.getElementById("b-hero-title").value = b.heroTitle||"";
+  document.getElementById("b-hero-sub").value = b.heroSub||"";
+  document.getElementById("b-hero-img").value = b.heroImg||"";
+  document.getElementById("b-hours").value = b.hours||"";
+  document.getElementById("b-phone").value = b.phone||"";
+  document.getElementById("b-address").value = b.address||"";
+}
+
+function saveBranding() {
+  state.branding = {
+    name: document.getElementById("b-name").value.trim() || "The Golden Plate",
+    tag: document.getElementById("b-tag").value.trim(),
+    heroTitle: document.getElementById("b-hero-title").value.trim(),
+    heroSub: document.getElementById("b-hero-sub").value.trim(),
+    heroImg: document.getElementById("b-hero-img").value.trim(),
+    hours: document.getElementById("b-hours").value.trim(),
+    phone: document.getElementById("b-phone").value.trim(),
+    address: document.getElementById("b-address").value.trim(),
+  };
+  saveState();
+  renderMenu();
+  alert("Branding saved!");
+}
+
+// ====================================================
+// AUTH
+// ====================================================
+function showLogin() {
+  document.getElementById("login-pw").value = "";
+  document.getElementById("login-error").style.display = "none";
+  document.getElementById("login-overlay").classList.add("open");
+  setTimeout(() => document.getElementById("login-pw").focus(), 100);
+}
+function closeLogin() {
+  document.getElementById("login-overlay").classList.remove("open");
+}
+function doLogin() {
+  const pw = document.getElementById("login-pw").value;
+  if (pw === state.password) {
+    closeLogin();
+    openAdmin();
+  } else {
+    document.getElementById("login-error").style.display = "block";
+  }
+}
+function changePassword() {
+  const pw = document.getElementById("new-pw").value;
+  const confirm = document.getElementById("confirm-pw").value;
+  if (!pw) { alert("Enter a new password."); return; }
+  if (pw !== confirm) { alert("Passwords don't match."); return; }
+  state.password = pw;
+  saveState();
+  alert("Password updated!");
+  document.getElementById("new-pw").value = "";
+  document.getElementById("confirm-pw").value = "";
+}
+
+// ====================================================
+// ADMIN PANEL
+// ====================================================
+function openAdmin() {
+  document.getElementById("admin-overlay").classList.add("open");
+  renderAdminItems();
+  renderCatEditor();
+  renderBrandingForm();
+  renderThemes();
+}
+function closeAdmin() {
+  document.getElementById("admin-overlay").classList.remove("open");
+}
+
+function switchTab(name) {
+  document.querySelectorAll(".admin-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  event.currentTarget.classList.add("active");
+}
+
+// ====================================================
+// IMPORT / EXPORT
+// ====================================================
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "menu-data.json";
+  a.click();
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.items || !data.categories) { alert("Invalid menu JSON."); return; }
+      state = data;
+      saveState();
+      renderMenu();
+      renderAdminItems();
+      renderCatEditor();
+      renderBrandingForm();
+      renderThemes();
+      applyTheme(state.theme || "dark");
+      alert("Menu imported!");
+    } catch(err) { alert("Failed to parse JSON."); }
+  };
+  reader.readAsText(file);
+}
+
+// ====================================================
+// PRICING OPTIONS
+// ====================================================
+function renderPricingOptions() {
+  const list = document.getElementById("pricing-options-list");
+  const pricing = window.editingPricing || [];
+  list.innerHTML = pricing.map((p, i) => `
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end">
+      <input type="text" placeholder="e.g. Regular, Large, Family Pack" value="${escHtml(p.size)}" 
+        onchange="updatePricingOption(${i}, 'size', this.value)" 
+        style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;">
+      <input type="text" placeholder="e.g. $18" value="${escHtml(p.price)}" 
+        onchange="updatePricingOption(${i}, 'price', this.value)" 
+        style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;">
+      <button type="button" class="btn btn-danger btn-sm" onclick="removePricingOption(${i})">Remove</button>
+    </div>
+  `).join("");
+}
+
+function updatePricingOption(index, field, value) {
+  if (window.editingPricing[index]) {
+    window.editingPricing[index][field] = value;
+  }
+}
+
+function removePricingOption(index) {
+  window.editingPricing.splice(index, 1);
+  renderPricingOptions();
+}
+
+function addPricingOption() {
+  window.editingPricing = window.editingPricing || [];
+  window.editingPricing.push({size: "", price: ""});
+  renderPricingOptions();
+}
+
+// ====================================================
+// UTILS
+// ====================================================
+function escHtml(str) {
+  return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// Intersection observer for category nav
+function initScrollSpy() {
+  const sections = document.querySelectorAll("[data-section]");
+  const pills = document.querySelectorAll(".cat-pill");
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute("data-section");
+        pills.forEach(p => {
+          p.classList.toggle("active", p.getAttribute("onclick").includes(`'${id}'`));
+        });
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px" });
+  sections.forEach(s => observer.observe(s));
+}
+
+// ====================================================
+// INIT
+// ====================================================
+loadState();
+applyTheme(state.theme || "dark");
+renderMenu();
+setTimeout(initScrollSpy, 200);
+
+// Close overlays on background click
+document.getElementById("login-overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeLogin();
+});
+document.getElementById("admin-overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeAdmin();
+});
+document.getElementById("item-modal-overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeItemModal();
+});
+</script>
+</body>
+</html>
