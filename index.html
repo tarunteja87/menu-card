@@ -538,6 +538,27 @@
     letter-spacing: 0.05em;
   }
 
+  /* Out of Stock */
+  .menu-card.out-of-stock {
+    opacity: 0.55;
+    filter: grayscale(70%);
+    pointer-events: none;
+  }
+  .menu-card.out-of-stock:hover { transform: none; }
+  .out-of-stock-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(80,80,80,0.92);
+    color: #ccc;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 40px;
+    font-family: var(--font-body);
+    letter-spacing: 0.04em;
+    z-index: 2;
+  }
+
   /* Footer */
   .menu-footer {
     text-align: center;
@@ -664,7 +685,7 @@
 
   <footer class="menu-footer">
     <div id="footer-info"></div>
-    <div style="margin-top:8px">Powered by <strong>MenuCard Pro</strong></div>
+    <div style="margin-top:8px">Powered by <strong>Tarun Websites</strong></div>
   </footer>
 </div>
 
@@ -878,6 +899,10 @@
       <label>Tags (comma separated)</label>
       <input type="text" id="edit-tags" placeholder="e.g. Gluten Free, Spicy">
     </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="edit-unavailable" style="width:auto;accent-color:var(--accent);width:16px;height:16px;cursor:pointer;">
+      <label style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);margin:0;cursor:pointer;" for="edit-unavailable">Mark as <strong>Out of Stock</strong> (greyed out on menu)</label>
+    </div>
     <div class="flex-row mt-16">
       <button class="btn btn-primary" style="flex:1" onclick="saveItem()">Save Item</button>
       <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
@@ -889,6 +914,21 @@
 // ====================================================
 // FIREBASE SETUP
 // ====================================================
+
+// -------------------------------------------------------
+// HARDCODED FIREBASE CONFIG
+// Edit these values with your Firebase project details.
+// This ensures the app auto-connects from GitHub Pages
+// without needing the admin to enter credentials manually.
+// -------------------------------------------------------
+const HARDCODED_FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyBaQwlK2w_ycf7xpjiYzD35Mcw-Eqc8B98",        // e.g. "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  authDomain:  "menu-card-60349.firebaseapp.com",        // e.g. "your-project.firebaseapp.com"
+  databaseURL: "https://menu-card-60349-default-rtdb.firebaseio.com",        // e.g. "https://your-project-default-rtdb.firebaseio.com"
+  projectId:   "menu-card-60349",        // e.g. "your-project-id"
+};
+// -------------------------------------------------------
+
 const FB_CONFIG_KEY = "menucard_firebase_config";
 let db = null;
 let fbRef = null;
@@ -1229,6 +1269,7 @@ function applyMenuFilter(filter) {
 }
 
 function itemCard(item) {
+  const isUnavailable = item.available === false;
   const img = item.img
     ? `<img class="card-img" src="${escHtml(item.img)}" alt="${escHtml(item.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : "";
@@ -1241,12 +1282,16 @@ function itemCard(item) {
   const typeLabel = (item.type === "veg" || item.type === "nonveg")
     ? `<div class="card-type-label" style="position:absolute;bottom:10px;right:10px;font-size:11px;padding:4px 10px;background:${item.type === 'veg' ? 'rgba(76,175,80,0.9)' : 'rgba(244,67,54,0.9)'};color:white;border-radius:12px;font-weight:600;">${item.type === 'veg' ? '🥬 Veg' : '🍗 Non-Veg'}</div>`
     : "";
+
+  const unavailableBadge = isUnavailable
+    ? `<div class="out-of-stock-badge">Out of Stock</div>`
+    : "";
   
   return `
-    <div class="menu-card" style="position:relative;">
+    <div class="menu-card${isUnavailable ? ' out-of-stock' : ''}" style="position:relative;">
       <div class="card-img-wrap">
         ${item.img ? `<img class="card-img" src="${escHtml(item.img)}" alt="${escHtml(item.name)}" loading="lazy">` : `<div class="card-no-img">🍽️</div>`}
-        ${item.badge ? `<div class="card-badge">${escHtml(item.badge)}</div>` : ""}
+        ${isUnavailable ? unavailableBadge : (item.badge ? `<div class="card-badge">${escHtml(item.badge)}</div>` : "")}
         ${typeLabel}
       </div>
       <div class="card-body">
@@ -1312,6 +1357,7 @@ function renderAdminItems() {
           <div class="admin-item-meta">${catName} &nbsp;·&nbsp; ${escHtml(priceStr)}</div>
         </div>
         <div class="admin-item-actions">
+          <button class="btn btn-sm" style="background:${item.available === false ? 'rgba(220,60,60,0.15)' : 'rgba(76,175,80,0.15)'};color:${item.available === false ? '#e06060' : '#4caf82'};border:1px solid ${item.available === false ? 'rgba(220,60,60,0.3)' : 'rgba(76,175,80,0.3)'}" onclick="toggleAvailability('${item.id}')" title="Toggle availability">${item.available === false ? '✕ Off' : '✓ On'}</button>
           <button class="btn btn-ghost btn-sm" onclick="openEditItem('${item.id}')">Edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Del</button>
         </div>
@@ -1328,6 +1374,7 @@ function openAddItem() {
   document.getElementById("edit-type").value = "veg";
   document.getElementById("edit-badge").value = "";
   document.getElementById("edit-tags").value = "";
+  document.getElementById("edit-unavailable").checked = false;
   document.getElementById("edit-img").value = "";
   previewImg("");
   populateCatSelect();
@@ -1347,6 +1394,7 @@ function openEditItem(id) {
   document.getElementById("edit-type").value = item.type || "veg";
   document.getElementById("edit-badge").value = item.badge || "";
   document.getElementById("edit-tags").value = (item.tags||[]).join(", ");
+  document.getElementById("edit-unavailable").checked = item.available === false;
   document.getElementById("edit-img").value = item.img || "";
   previewImg(item.img || "");
   populateCatSelect(item.cat);
@@ -1401,6 +1449,7 @@ function saveItem() {
     tags: document.getElementById("edit-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
     img: document.getElementById("edit-img").value.trim(),
     cat: document.getElementById("edit-cat").value,
+    available: !document.getElementById("edit-unavailable").checked,
   };
 
   if (id) {
@@ -1413,6 +1462,15 @@ function saveItem() {
   renderMenu();
   renderAdminItems();
   closeItemModal();
+}
+
+function toggleAvailability(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  item.available = item.available === false ? true : false;
+  saveState();
+  renderMenu();
+  renderAdminItems();
 }
 
 function deleteItem(id) {
@@ -1703,13 +1761,19 @@ applyTheme(state.theme || "dark");
 renderMenu();
 setTimeout(initScrollSpy, 200);
 
-// Auto-connect Firebase if config was saved before
+// Auto-connect Firebase — prefers HARDCODED_FIREBASE_CONFIG if filled in,
+// otherwise falls back to whatever was saved in localStorage by the admin.
 (function() {
-  const cfg = loadFirebaseConfig();
-  if (cfg && cfg.apiKey && cfg.databaseURL) {
-    initFirebase(cfg);
+  const hardcoded = HARDCODED_FIREBASE_CONFIG;
+  if (hardcoded && hardcoded.apiKey && hardcoded.databaseURL) {
+    initFirebase(hardcoded);
   } else {
-    setSyncStatus("local");
+    const cfg = loadFirebaseConfig();
+    if (cfg && cfg.apiKey && cfg.databaseURL) {
+      initFirebase(cfg);
+    } else {
+      setSyncStatus("local");
+    }
   }
 })();
 
