@@ -138,6 +138,8 @@
     max-width: 760px;
     padding: 32px;
     margin: auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
   }
   .admin-title {
     font-family: var(--font-display);
@@ -264,6 +266,8 @@
     width: 100%;
     max-width: 500px;
     padding: 28px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
   .item-modal h3 { font-family: var(--font-display); font-size: 22px; margin-bottom: 20px; color: var(--text); }
   .img-preview-wrap { position: relative; margin-bottom: 12px; }
@@ -569,7 +573,97 @@
   }
   .menu-footer strong { color: var(--text); }
 
-  /* Utilities */
+  /* Share & QR */
+  .share-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .share-btn.whatsapp:hover { border-color: #25d366; color: #25d366; }
+  #qr-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 8500;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  #qr-modal-overlay.open { display: flex; }
+  .qr-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    text-align: center;
+    max-width: 340px;
+    width: 100%;
+  }
+  .qr-box h3 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
+  .qr-box p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  #qr-canvas { border-radius: 12px; background: white; padding: 12px; display: block; margin: 0 auto 20px; }
+
+  /* Admin feature toggles */
+  .feature-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .feature-toggle-label { font-size: 13px; color: var(--text); }
+  .feature-toggle-label span { font-size: 12px; color: var(--text2); display: block; margin-top: 2px; }
+  .toggle-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-slider:before {
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: var(--text2);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); background: var(--bg); }
   .flex-row { display: flex; gap: 10px; align-items: center; }
   .gap-12 { gap: 12px; }
   .mt-16 { margin-top: 16px; }
@@ -645,6 +739,7 @@
     .theme-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="theme-dark">
 
@@ -670,6 +765,19 @@
     </div>
   </div>
 
+  <!-- Share Bar (shown if enabled by admin) -->
+  <div class="share-bar" id="share-bar" style="display:none">
+    <span style="font-size:12px;color:var(--text2);margin-right:4px">Share:</span>
+    <button class="share-btn whatsapp" id="share-whatsapp-btn" onclick="shareWhatsApp()" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      WhatsApp
+    </button>
+    <button class="share-btn" id="share-qr-btn" onclick="showQrModal()" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/><line x1="14" y1="14" x2="14" y2="14"/><line x1="17" y1="14" x2="17" y2="14"/><line x1="20" y1="14" x2="20" y2="14"/><line x1="14" y1="17" x2="14" y2="17"/><line x1="17" y1="17" x2="20" y2="17"/><line x1="20" y1="20" x2="14" y2="20"/><line x1="17" y1="20" x2="17" y2="17"/></svg>
+      QR Code
+    </button>
+  </div>
+
   <!-- Menu Filter -->
   <div class="cat-controls">
     <div class="filter-toggle" id="filter-toggle"></div>
@@ -687,6 +795,19 @@
     <div id="footer-info"></div>
     <div style="margin-top:8px">Powered by <strong>Tarun's Websites</strong></div>
   </footer>
+</div>
+
+<!-- ====== QR MODAL ====== -->
+<div id="qr-modal-overlay">
+  <div class="qr-box">
+    <h3>Scan to Open Menu</h3>
+    <p>Share this QR code with your guests</p>
+    <canvas id="qr-canvas" width="200" height="200"></canvas>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-primary" onclick="downloadQR()">Download QR</button>
+      <button class="btn btn-ghost" onclick="closeQrModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- ====== LOGIN OVERLAY ====== -->
@@ -834,6 +955,29 @@
         <input type="password" id="confirm-pw" placeholder="Confirm password">
       </div>
       <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+      <hr class="divider">
+      <!-- Feature Toggles -->
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;">⚙️ Feature Toggles</div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          WhatsApp Share Button
+          <span>Shows a "Share on WhatsApp" button on the public menu</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-whatsapp" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          QR Code Button
+          <span>Shows a "QR Code" button on the public menu for easy sharing</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-qr" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
       <hr class="divider">
       <div class="form-row">
         <label>Export Menu Data (JSON)</label>
@@ -1010,6 +1154,7 @@ function initFirebase(cfg) {
           renderCatEditor();
           renderBrandingForm();
           renderThemes();
+          renderFeatureToggles();
         }
       } else {
         // No data in Firebase yet — push current state up
@@ -1056,7 +1201,6 @@ const DEFAULT_DATA = {
     phone: "+1 234 567 8900",
     address: "123 Main Street, Downtown"
   },
-  menuFilter: "all",
   categories: [
     { id: "veg", name: "Vegetarian", parent: null },
     { id: "veg-starters", name: "Starters", parent: "veg" },
@@ -1120,6 +1264,8 @@ function resetToDefaults() {
   renderCatEditor();
   renderBrandingForm();
   renderThemes();
+  renderFeatureToggles();
+  applyFeatureToggles();
   alert("Reset complete!");
 }
 
@@ -1175,7 +1321,7 @@ function renderMenu() {
     `<strong>${b.name}</strong> &nbsp;·&nbsp; ${b.phone || ""} &nbsp;·&nbsp; ${b.address || ""}`;
 
   renderFilterToggle();
-  const menuFilter = state.menuFilter || "all";
+  const menuFilter = getUserMenuFilter();
   const nav = document.getElementById("cat-nav");
   const parentCats = state.categories.filter(c => !c.parent);
   const visibleParentCats = parentCats.filter(parent => {
@@ -1246,16 +1392,24 @@ function renderMenu() {
       `;
     }
   }).join("");
+  applyFeatureToggles();
+}
+
+function getUserMenuFilter() {
+  return sessionStorage.getItem("menucard_filter") || "all";
+}
+function setUserMenuFilter(filter) {
+  sessionStorage.setItem("menucard_filter", filter);
 }
 
 function renderFilterToggle() {
   const toggle = document.getElementById("filter-toggle");
-  const filter = state.menuFilter || "all";
+  const filter = getUserMenuFilter();
   if (!toggle) return;
   const buttons = [
     { id: "all", label: "All" },
-    { id: "veg", label: "Veg" },
-    { id: "nonveg", label: "Non-Veg" }
+    { id: "veg", label: "🥬 Veg" },
+    { id: "nonveg", label: "🍗 Non-Veg" }
   ];
   toggle.innerHTML = buttons.map(btn => `
     <button class="toggle-btn ${filter === btn.id ? 'active' : ''}" onclick="applyMenuFilter('${btn.id}')">${btn.label}</button>
@@ -1263,8 +1417,7 @@ function renderFilterToggle() {
 }
 
 function applyMenuFilter(filter) {
-  state.menuFilter = filter;
-  saveState();
+  setUserMenuFilter(filter);
   renderMenu();
 }
 
@@ -1648,6 +1801,7 @@ function openAdmin() {
   renderCatEditor();
   renderBrandingForm();
   renderThemes();
+  renderFeatureToggles();
   populateFbForm();
 }
 function closeAdmin() {
@@ -1730,6 +1884,94 @@ function addPricingOption() {
 }
 
 // ====================================================
+// FEATURE TOGGLES (WhatsApp + QR)
+// ====================================================
+function saveFeatureToggles() {
+  state.features = state.features || {};
+  state.features.whatsapp = document.getElementById("toggle-whatsapp").checked;
+  state.features.qr = document.getElementById("toggle-qr").checked;
+  saveState();
+  applyFeatureToggles();
+}
+
+function applyFeatureToggles() {
+  const f = state.features || {};
+  const sharebar = document.getElementById("share-bar");
+  const waBtn = document.getElementById("share-whatsapp-btn");
+  const qrBtn = document.getElementById("share-qr-btn");
+  const showBar = f.whatsapp || f.qr;
+  sharebar.style.display = showBar ? "flex" : "none";
+  waBtn.style.display = f.whatsapp ? "inline-flex" : "none";
+  qrBtn.style.display = f.qr ? "inline-flex" : "none";
+}
+
+function renderFeatureToggles() {
+  const f = state.features || {};
+  const waEl = document.getElementById("toggle-whatsapp");
+  const qrEl = document.getElementById("toggle-qr");
+  if (waEl) waEl.checked = !!f.whatsapp;
+  if (qrEl) qrEl.checked = !!f.qr;
+}
+
+function shareWhatsApp() {
+  const url = encodeURIComponent(window.location.href);
+  const name = encodeURIComponent((state.branding && state.branding.name) || "our menu");
+  window.open(`https://wa.me/?text=Check%20out%20${name}%20%F0%9F%8D3%0A${url}`, "_blank");
+}
+
+// QR Modal
+let qrInstance = null;
+function showQrModal() {
+  const overlay = document.getElementById("qr-modal-overlay");
+  overlay.classList.add("open");
+  const canvas = document.getElementById("qr-canvas");
+  // Clear previous
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  // Use qrcode.js to draw on canvas
+  const url = window.location.href;
+  // We'll draw it in a temp div then copy to canvas
+  const tmp = document.createElement("div");
+  tmp.style.display = "none";
+  document.body.appendChild(tmp);
+  try {
+    new QRCode(tmp, {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    setTimeout(() => {
+      const img = tmp.querySelector("img") || tmp.querySelector("canvas");
+      if (img) {
+        const ctx = canvas.getContext("2d");
+        if (img.tagName === "CANVAS") {
+          ctx.drawImage(img, 0, 0, 200, 200);
+        } else {
+          const i = new Image();
+          i.onload = () => ctx.drawImage(i, 0, 0, 200, 200);
+          i.src = img.src;
+        }
+      }
+      document.body.removeChild(tmp);
+    }, 100);
+  } catch(e) {
+    document.body.removeChild(tmp);
+  }
+}
+function closeQrModal() {
+  document.getElementById("qr-modal-overlay").classList.remove("open");
+}
+function downloadQR() {
+  const canvas = document.getElementById("qr-canvas");
+  const a = document.createElement("a");
+  a.download = "menu-qr.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+
+// ====================================================
 // UTILS
 // ====================================================
 function escHtml(str) {
@@ -1787,6 +2029,11 @@ document.getElementById("admin-overlay").addEventListener("click", e => {
 document.getElementById("item-modal-overlay").addEventListener("click", e => {
   if (e.target === e.currentTarget) closeItemModal();
 });
+
+document.getElementById("qr-modal-overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeQrModal();
+});
+
 </script>
 </body>
 </html>
