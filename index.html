@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Digital Menu</title>
+<link id="favicon-link" rel="icon" type="image/png" href="">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -731,6 +732,75 @@
   .theme-blush .card-name { font-style: italic; }
   .theme-blush .hero-title { font-weight: 400; font-style: italic; }
 
+  /* Links & Location admin section */
+  .links-section-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .links-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .links-section-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .links-section-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .links-section-sub { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+  .links-fields { padding: 16px 18px; }
+
+  /* Platform row in admin */
+  .platform-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 1fr 42px auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  @media (max-width: 560px) {
+    .platform-row { grid-template-columns: 28px 1fr 42px auto; }
+    .platform-row .platform-url-col { grid-column: 1 / -1; }
+  }
+  .platform-logo-preview { display:flex; align-items:center; justify-content:center; }
+  .platform-logo-preview svg { border-radius: 50%; }
+  .platform-row input { padding: 6px 10px; font-size: 13px; }
+
+  /* External link buttons — logo style */
+  .ext-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--btn-radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .ext-link-btn svg { flex-shrink: 0; border-radius: 50%; }
+  .ext-link-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); border-color: transparent; }
+  .ext-link-btn.swiggy-btn:hover   { background: rgba(252,128,25,0.12);  border-color: #FC8019; color: #FC8019; }
+  .ext-link-btn.zomato-btn:hover   { background: rgba(226,55,68,0.12);   border-color: #E23744; color: #E23744; }
+  .ext-link-btn.magicpin-btn:hover { background: rgba(108,63,197,0.12);  border-color: #6C3FC5; color: #6C3FC5; }
+  .ext-link-btn.district-btn:hover { background: rgba(91,33,182,0.12);   border-color: #5B21B6; color: #5B21B6; }
+  .ext-link-btn.dineout-btn:hover  { background: rgba(230,81,0,0.12);    border-color: #E65100; color: #E65100; }
+  .ext-link-btn.eazydiner-btn:hover{ background: rgba(192,57,43,0.12);   border-color: #C0392B; color: #C0392B; }
+  .ext-link-btn.maps-btn:hover     { background: rgba(66,133,244,0.12);  border-color: #4285F4; color: #4285F4; }
+  .ext-link-btn.style-pill { border-radius: 999px; }
+  .ext-link-btn.style-square { border-radius: 4px; }
+
   /* Responsive */
   @media (max-width: 640px) {
     .hero { height: 300px; }
@@ -802,11 +872,45 @@
   <main class="menu-main" id="menu-main"></main>
 
   <footer class="menu-footer">
+    <!-- Location strip with embedded map -->
+    <div id="location-footer-strip" style="display:none;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;justify-content:center;">
+        <!-- Map embed -->
+        <div id="footer-map-wrap" style="display:none;border-radius:14px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.18);">
+          <iframe id="footer-map-iframe" width="220" height="160" frameborder="0" style="display:block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
+        </div>
+        <!-- Address + button -->
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:180px;">
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);">📍 Find Us</div>
+          <div id="footer-location-address" style="font-size:14px;color:var(--text);line-height:1.55;font-weight:500;"></div>
+          <a id="footer-directions-btn" href="#" target="_blank" class="ext-link-btn maps-btn" style="align-self:flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="footer-directions-label">Get Directions</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery platforms footer -->
+    <div id="delivery-footer-wrap" style="display:none;margin-bottom:16px;">
+      <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;">Order Online</div>
+      <div id="delivery-footer-btns" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
+    <!-- Dine-in platforms footer -->
+    <div id="dinein-footer-wrap" style="display:none;margin-bottom:16px;">
+      <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;">Reserve a Table</div>
+      <div id="dinein-footer-btns" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
     <div id="footer-info"></div>
-    <div id="social-links-footer" style="display:none;margin-top:10px;display:none;gap:16px;justify-content:center;align-items:center;"></div>
+    <div id="social-links-footer" style="display:none;margin-top:10px;gap:16px;justify-content:center;align-items:center;"></div>
     <div id="powered-by-footer" style="margin-top:8px">Powered by <strong>Tarun's Websites</strong></div>
   </footer>
 </div>
+
+<!-- Delivery/dine-in share bar row (shown when position=sharebar/both) -->
+<div id="ext-links-sharebar-row" style="display:none;padding:6px 24px 10px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center;"></div>
 
 <!-- ====== QR MODAL ====== -->
 <div id="qr-modal-overlay">
@@ -853,6 +957,7 @@
       <button class="admin-tab" onclick="switchTab('categories')">Categories</button>
       <button class="admin-tab" onclick="switchTab('branding')">Branding</button>
       <button class="admin-tab" onclick="switchTab('themes')">Themes</button>
+      <button class="admin-tab" onclick="switchTab('links')">Links & Location</button>
       <button class="admin-tab" onclick="switchTab('settings')">Settings</button>
     </div>
 
@@ -882,6 +987,29 @@
 
     <!-- BRANDING TAB -->
     <div class="admin-section" id="tab-branding">
+
+      <!-- Site Identity -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px;">🌐 Browser / SEO Identity</div>
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Browser Tab Title</label>
+            <input type="text" id="b-site-title" placeholder="e.g. The Golden Plate — Menu" oninput="liveUpdateTitle(this.value)">
+            <div style="font-size:11px;color:var(--text2);margin-top:4px;">This appears in the browser tab and search results</div>
+          </div>
+          <div class="form-row">
+            <label>Favicon URL <span style="color:var(--text2);font-weight:400">(32×32 or 64×64 PNG/ICO)</span></label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="url" id="b-favicon-url" placeholder="https://yoursite.com/favicon.png" oninput="liveUpdateFavicon(this.value)" style="flex:1;">
+              <div id="favicon-preview" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                <span style="font-size:10px;color:var(--text2)">—</span>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px;">Paste any public image URL. Changes apply live immediately.</div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-grid-2">
         <div class="form-row">
           <label>Restaurant Name</label>
@@ -925,6 +1053,109 @@
     <div class="admin-section" id="tab-themes">
       <div class="info-banner">Themes instantly change fonts, colors, and card shapes across your entire menu.</div>
       <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- LINKS & LOCATION TAB -->
+    <div class="admin-section" id="tab-links">
+
+      <!-- ── LOCATION ── -->
+      <div class="links-section-card">
+        <div class="links-section-header">
+          <div class="links-section-icon">📍</div>
+          <div>
+            <div class="links-section-title">Location & Directions</div>
+            <div class="links-section-sub">Show address in footer with a "Get Directions" button that opens Google Maps</div>
+          </div>
+          <label class="toggle-switch" style="margin-left:auto;flex-shrink:0">
+            <input type="checkbox" id="toggle-location" onchange="saveLinksToggles()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="links-fields">
+          <div class="form-row">
+            <label>Display Address</label>
+            <input type="text" id="loc-address" placeholder="e.g. 12, Banjara Hills, Hyderabad, Telangana 500034">
+          </div>
+          <div class="form-row">
+            <label>Google Maps Share Link <span style="color:var(--text2);font-weight:400">(opens when user taps Get Directions)</span></label>
+            <input type="url" id="loc-maps-url" placeholder="https://maps.google.com/?q=...">
+          </div>
+          <div class="form-row">
+            <label>Google Maps Embed URL <span style="color:var(--text2);font-weight:400">(for the mini map widget in footer)</span></label>
+            <input type="url" id="loc-embed-url" placeholder="https://www.google.com/maps/embed?pb=..." oninput="previewAdminMap(this.value)">
+            <div style="font-size:11px;color:var(--text2);margin-top:5px;line-height:1.6;">
+              To get this: Open Google Maps → search your restaurant → click Share → <strong>Embed a map</strong> → copy the <code style="background:var(--bg);padding:1px 5px;border-radius:4px;">src="..."</code> URL
+            </div>
+          </div>
+          <!-- Live map preview in admin -->
+          <div id="admin-map-preview" style="display:none;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px;">
+            <iframe id="admin-map-iframe" width="100%" height="180" frameborder="0" style="display:block;" allowfullscreen="" loading="lazy" src=""></iframe>
+          </div>
+          <div class="form-row">
+            <label>Button Label</label>
+            <input type="text" id="loc-btn-label" placeholder="Get Directions">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveLocationConfig()">Save Location</button>
+        </div>
+      </div>
+
+      <!-- ── DELIVERY PLATFORMS ── -->
+      <div class="links-section-card" style="margin-top:16px">
+        <div class="links-section-header">
+          <div class="links-section-icon">🛵</div>
+          <div>
+            <div class="links-section-title">Food Delivery Platforms</div>
+            <div class="links-section-sub">Show order buttons on your menu — Swiggy, Zomato, etc.</div>
+          </div>
+        </div>
+        <div class="links-fields" id="delivery-platforms-list"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addDeliveryPlatform()" style="margin-top:8px">+ Add Platform</button>
+        <button class="btn btn-primary btn-sm" onclick="saveDeliveryPlatforms()" style="margin-top:8px;margin-left:8px">Save Delivery Links</button>
+      </div>
+
+      <!-- ── DINE-IN APPS ── -->
+      <div class="links-section-card" style="margin-top:16px">
+        <div class="links-section-header">
+          <div class="links-section-icon">🍽️</div>
+          <div>
+            <div class="links-section-title">Dine-In & Reservation Apps</div>
+            <div class="links-section-sub">District, Dineout, EazyDiner, OpenTable, etc. — show "Reserve a Table" buttons</div>
+          </div>
+        </div>
+        <div class="links-fields" id="dinein-platforms-list"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addDineinPlatform()" style="margin-top:8px">+ Add App</button>
+        <button class="btn btn-primary btn-sm" onclick="saveDineinPlatforms()" style="margin-top:8px;margin-left:8px">Save Dine-In Links</button>
+      </div>
+
+      <!-- ── DISPLAY POSITION ── -->
+      <div class="links-section-card" style="margin-top:16px">
+        <div class="links-section-header">
+          <div class="links-section-icon">📐</div>
+          <div>
+            <div class="links-section-title">Display Options</div>
+            <div class="links-section-sub">Choose where the delivery/dine-in buttons appear on the public menu</div>
+          </div>
+        </div>
+        <div class="links-fields">
+          <div class="form-row">
+            <label>Button Position</label>
+            <select id="links-position" onchange="saveLinksToggles()" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;">
+              <option value="footer">Footer (below menu)</option>
+              <option value="sharebar">Share Bar (top, next to WhatsApp/QR)</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Button Style</label>
+            <select id="links-style" onchange="saveLinksToggles()" style="width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;">
+              <option value="pill">Pill (rounded)</option>
+              <option value="square">Square (flat)</option>
+              <option value="icon-only">Icon + Name only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- SETTINGS TAB -->
@@ -1279,13 +1510,17 @@ function initFirebase(cfg) {
         state = data;
         if (localPw) state.password = localPw; // password stays local
         applyTheme(state.theme || "dark");
+        applyBrowserIdentity();
         renderMenu();
+        applyFeatureToggles();
+        applyLinksConfig();
         if (document.getElementById("admin-overlay").classList.contains("open")) {
           renderAdminItems();
           renderCatEditor();
           renderBrandingForm();
           renderThemes();
           renderFeatureToggles();
+          renderLinksTab();
         }
       } else {
         // No data in Firebase yet — push current state up
@@ -1864,30 +2099,68 @@ function deleteCategory(id) {
 // ====================================================
 function renderBrandingForm() {
   const b = state.branding;
-  document.getElementById("b-name").value = b.name||"";
-  document.getElementById("b-tag").value = b.tag||"";
+  document.getElementById("b-name").value       = b.name||"";
+  document.getElementById("b-tag").value        = b.tag||"";
   document.getElementById("b-hero-title").value = b.heroTitle||"";
-  document.getElementById("b-hero-sub").value = b.heroSub||"";
-  document.getElementById("b-hero-img").value = b.heroImg||"";
-  document.getElementById("b-hours").value = b.hours||"";
-  document.getElementById("b-phone").value = b.phone||"";
-  document.getElementById("b-address").value = b.address||"";
+  document.getElementById("b-hero-sub").value   = b.heroSub||"";
+  document.getElementById("b-hero-img").value   = b.heroImg||"";
+  document.getElementById("b-hours").value      = b.hours||"";
+  document.getElementById("b-phone").value      = b.phone||"";
+  document.getElementById("b-address").value    = b.address||"";
+  document.getElementById("b-site-title").value = b.siteTitle||"";
+  document.getElementById("b-favicon-url").value= b.faviconUrl||"";
+  updateFaviconPreview(b.faviconUrl||"");
 }
 
 function saveBranding() {
   state.branding = {
-    name: document.getElementById("b-name").value.trim() || "The Golden Plate",
-    tag: document.getElementById("b-tag").value.trim(),
-    heroTitle: document.getElementById("b-hero-title").value.trim(),
-    heroSub: document.getElementById("b-hero-sub").value.trim(),
-    heroImg: document.getElementById("b-hero-img").value.trim(),
-    hours: document.getElementById("b-hours").value.trim(),
-    phone: document.getElementById("b-phone").value.trim(),
-    address: document.getElementById("b-address").value.trim(),
+    name:       document.getElementById("b-name").value.trim() || "The Golden Plate",
+    tag:        document.getElementById("b-tag").value.trim(),
+    heroTitle:  document.getElementById("b-hero-title").value.trim(),
+    heroSub:    document.getElementById("b-hero-sub").value.trim(),
+    heroImg:    document.getElementById("b-hero-img").value.trim(),
+    hours:      document.getElementById("b-hours").value.trim(),
+    phone:      document.getElementById("b-phone").value.trim(),
+    address:    document.getElementById("b-address").value.trim(),
+    siteTitle:  document.getElementById("b-site-title").value.trim(),
+    faviconUrl: document.getElementById("b-favicon-url").value.trim(),
   };
   saveState();
+  applyBrowserIdentity();
   renderMenu();
   alert("Branding saved!");
+}
+
+function applyBrowserIdentity() {
+  const b = state.branding || {};
+  // Tab title
+  document.title = b.siteTitle || b.name || "Digital Menu";
+  // Favicon
+  if (b.faviconUrl) {
+    let link = document.getElementById("favicon-link");
+    link.href = b.faviconUrl;
+  }
+}
+
+function liveUpdateTitle(val) {
+  document.title = val || state.branding?.name || "Digital Menu";
+}
+
+function liveUpdateFavicon(url) {
+  updateFaviconPreview(url);
+  if (url) {
+    document.getElementById("favicon-link").href = url;
+  }
+}
+
+function updateFaviconPreview(url) {
+  const box = document.getElementById("favicon-preview");
+  if (!box) return;
+  if (url) {
+    box.innerHTML = `<img src="${escHtml(url)}" style="width:28px;height:28px;object-fit:contain;border-radius:4px;" onerror="this.parentElement.innerHTML='<span style=font-size:10px;color:#e06060>✕</span>'">`;
+  } else {
+    box.innerHTML = `<span style="font-size:10px;color:var(--text2)">—</span>`;
+  }
 }
 
 // ====================================================
@@ -1933,6 +2206,7 @@ function openAdmin() {
   renderBrandingForm();
   renderThemes();
   renderFeatureToggles();
+  renderLinksTab();
   populateFbForm();
 }
 function closeAdmin() {
@@ -2226,6 +2500,257 @@ function downloadQR() {
 }
 
 // ====================================================
+// LINKS & LOCATION
+// ====================================================
+
+// SVG logos for platforms — inline so no external requests needed
+const PLATFORM_LOGOS = {
+  swiggy: `<svg width="18" height="18" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#FC8019"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-family="Arial Black,sans-serif" fill="white" font-weight="900">S</text></svg>`,
+  zomato: `<svg width="18" height="18" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#E23744"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-family="Arial Black,sans-serif" fill="white" font-weight="900">Z</text></svg>`,
+  magicpin: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#6C3FC5"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16" font-family="Arial Black,sans-serif" fill="white" font-weight="900">m</text></svg>`,
+  dunzo: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00C853"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16" font-family="Arial Black,sans-serif" fill="white" font-weight="900">D</text></svg>`,
+  blinkit: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#F8C200"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16" font-family="Arial Black,sans-serif" fill="#1a1a1a" font-weight="900">B</text></svg>`,
+  district: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#5B21B6"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-family="Arial Black,sans-serif" fill="white" font-weight="900">Di</text></svg>`,
+  dineout: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#E65100"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-family="Arial Black,sans-serif" fill="white" font-weight="900">Do</text></svg>`,
+  eazydiner: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#C0392B"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-family="Arial Black,sans-serif" fill="white" font-weight="900">Ez</text></svg>`,
+  opentable: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#DA3743"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-family="Arial Black,sans-serif" fill="white" font-weight="900">OT</text></svg>`,
+  maps: `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#4285F4"/><path d="M20 10a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" fill="white"/></svg>`,
+};
+
+function getLogo(id) {
+  return PLATFORM_LOGOS[id] || `<svg width="18" height="18" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="var(--accent)"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="18" font-family="sans-serif" fill="white">🔗</text></svg>`;
+}
+
+const DELIVERY_PRESETS = [
+  { id: "swiggy",   name: "Swiggy",   emoji: "🟠", btnClass: "swiggy-btn",   placeholder: "https://www.swiggy.com/restaurants/..." },
+  { id: "zomato",   name: "Zomato",   emoji: "🔴", btnClass: "zomato-btn",   placeholder: "https://www.zomato.com/..." },
+  { id: "magicpin", name: "Magicpin", emoji: "🟣", btnClass: "magicpin-btn", placeholder: "https://magicpin.in/..." },
+  { id: "dunzo",    name: "Dunzo",    emoji: "🟢", btnClass: "",             placeholder: "https://dunzo.com/..." },
+  { id: "blinkit",  name: "Blinkit",  emoji: "🟡", btnClass: "",             placeholder: "https://blinkit.com/..." },
+];
+const DINEIN_PRESETS = [
+  { id: "district",  name: "District",  emoji: "🟣", btnClass: "district-btn",  placeholder: "https://www.district.in/..." },
+  { id: "dineout",   name: "Dineout",   emoji: "🟠", btnClass: "dineout-btn",   placeholder: "https://www.dineout.co.in/..." },
+  { id: "eazydiner", name: "EazyDiner", emoji: "🔴", btnClass: "eazydiner-btn", placeholder: "https://eazydiner.com/..." },
+  { id: "opentable", name: "OpenTable", emoji: "🔵", btnClass: "",              placeholder: "https://www.opentable.com/..." },
+];
+
+function saveLinksToggles() {
+  state.linksConfig = state.linksConfig || {};
+  const tog = document.getElementById("toggle-location");
+  if (tog) state.linksConfig.locationEnabled = tog.checked;
+  const pos = document.getElementById("links-position");
+  if (pos) state.linksConfig.position = pos.value;
+  const sty = document.getElementById("links-style");
+  if (sty) state.linksConfig.style = sty.value;
+  saveState();
+  applyLinksConfig();
+}
+
+function previewAdminMap(url) {
+  const preview = document.getElementById("admin-map-preview");
+  const iframe  = document.getElementById("admin-map-iframe");
+  if (url && url.includes("google.com/maps")) {
+    preview.style.display = "block";
+    iframe.src = url;
+  } else {
+    preview.style.display = "none";
+    iframe.src = "";
+  }
+}
+
+function saveLocationConfig() {
+  state.linksConfig = state.linksConfig || {};
+  state.linksConfig.address  = document.getElementById("loc-address").value.trim();
+  state.linksConfig.mapsUrl  = document.getElementById("loc-maps-url").value.trim();
+  state.linksConfig.embedUrl = document.getElementById("loc-embed-url").value.trim();
+  state.linksConfig.btnLabel = document.getElementById("loc-btn-label").value.trim();
+  saveState();
+  applyLinksConfig();
+  alert("Location saved!");
+}
+
+function renderLinksTab() {
+  const lc = state.linksConfig || {};
+  const tog = document.getElementById("toggle-location");
+  if (tog) tog.checked = !!lc.locationEnabled;
+  const pos = document.getElementById("links-position");
+  if (pos) pos.value = lc.position || "footer";
+  const sty = document.getElementById("links-style");
+  if (sty) sty.value = lc.style || "pill";
+  if (document.getElementById("loc-address")) {
+    document.getElementById("loc-address").value   = lc.address   || "";
+    document.getElementById("loc-maps-url").value  = lc.mapsUrl   || "";
+    document.getElementById("loc-embed-url").value = lc.embedUrl  || "";
+    document.getElementById("loc-btn-label").value  = lc.btnLabel  || "";
+    previewAdminMap(lc.embedUrl || "");
+  }
+  renderDeliveryPlatformsList();
+  renderDineinPlatformsList();
+}
+
+// ---- Delivery platforms ----
+function getDeliveryPlatforms() {
+  return (state.linksConfig && state.linksConfig.deliveryPlatforms) || [];
+}
+function renderDeliveryPlatformsList() {
+  const list = document.getElementById("delivery-platforms-list");
+  if (!list) return;
+  const platforms = getDeliveryPlatforms();
+  const presetBtns = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">${DELIVERY_PRESETS.map(p => `<button class="btn btn-ghost btn-sm" onclick="addDeliveryPreset('${p.id}')" style="display:inline-flex;align-items:center;gap:6px;">${getLogo(p.id)}<span>${p.name}</span></button>`).join("")}</div>`;
+  if (platforms.length === 0) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">No platforms added yet. Pick a preset or add custom:</div>${presetBtns}`;
+    return;
+  }
+  list.innerHTML = platforms.map((p, i) => `
+    <div class="platform-row">
+      <div class="platform-logo-preview">${getLogo(p.id)}</div>
+      <input type="text" value="${escHtml(p.name)}" placeholder="Platform Name" onchange="updateDeliveryPlatform(${i},'name',this.value)">
+      <input type="url" value="${escHtml(p.url||'')}" placeholder="Your restaurant link on this platform" onchange="updateDeliveryPlatform(${i},'url',this.value)" class="platform-url-col">
+      <label class="toggle-switch" title="Enable/disable on menu"><input type="checkbox" ${p.enabled!==false?'checked':''} onchange="updateDeliveryPlatform(${i},'enabled',this.checked)"><span class="toggle-slider"></span></label>
+      <button class="btn btn-danger btn-sm" onclick="removeDeliveryPlatform(${i})">✕</button>
+    </div>`).join("") + presetBtns;
+}
+function addDeliveryPreset(id) {
+  const preset = DELIVERY_PRESETS.find(p => p.id === id);
+  if (!preset) return;
+  state.linksConfig = state.linksConfig || {};
+  state.linksConfig.deliveryPlatforms = getDeliveryPlatforms();
+  state.linksConfig.deliveryPlatforms.push({ id: preset.id, name: preset.name, emoji: preset.emoji, url: "", enabled: true, btnClass: preset.btnClass });
+  renderDeliveryPlatformsList();
+}
+function addDeliveryPlatform() {
+  state.linksConfig = state.linksConfig || {};
+  state.linksConfig.deliveryPlatforms = getDeliveryPlatforms();
+  state.linksConfig.deliveryPlatforms.push({ id: "custom_" + Date.now(), name: "", emoji: "🔗", url: "", enabled: true, btnClass: "" });
+  renderDeliveryPlatformsList();
+}
+function updateDeliveryPlatform(i, key, val) {
+  const plats = getDeliveryPlatforms();
+  if (plats[i]) plats[i][key] = val;
+  state.linksConfig.deliveryPlatforms = plats;
+}
+function removeDeliveryPlatform(i) {
+  state.linksConfig.deliveryPlatforms.splice(i, 1);
+  renderDeliveryPlatformsList();
+}
+function saveDeliveryPlatforms() {
+  saveState(); applyLinksConfig(); alert("Delivery links saved!");
+}
+
+// ---- Dine-in platforms ----
+function getDineinPlatforms() {
+  return (state.linksConfig && state.linksConfig.dineinPlatforms) || [];
+}
+function renderDineinPlatformsList() {
+  const list = document.getElementById("dinein-platforms-list");
+  if (!list) return;
+  const platforms = getDineinPlatforms();
+  const presetBtns = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">${DINEIN_PRESETS.map(p => `<button class="btn btn-ghost btn-sm" onclick="addDineinPreset('${p.id}')" style="display:inline-flex;align-items:center;gap:6px;">${getLogo(p.id)}<span>${p.name}</span></button>`).join("")}</div>`;
+  if (platforms.length === 0) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">No apps added yet. Pick a preset or add custom:</div>${presetBtns}`;
+    return;
+  }
+  list.innerHTML = platforms.map((p, i) => `
+    <div class="platform-row">
+      <div class="platform-logo-preview">${getLogo(p.id)}</div>
+      <input type="text" value="${escHtml(p.name)}" placeholder="App Name" onchange="updateDineinPlatform(${i},'name',this.value)">
+      <input type="url" value="${escHtml(p.url||'')}" placeholder="Your reservation link" onchange="updateDineinPlatform(${i},'url',this.value)" class="platform-url-col">
+      <label class="toggle-switch" title="Enable/disable on menu"><input type="checkbox" ${p.enabled!==false?'checked':''} onchange="updateDineinPlatform(${i},'enabled',this.checked)"><span class="toggle-slider"></span></label>
+      <button class="btn btn-danger btn-sm" onclick="removeDineinPlatform(${i})">✕</button>
+    </div>`).join("") + presetBtns;
+}
+function addDineinPreset(id) {
+  const preset = DINEIN_PRESETS.find(p => p.id === id);
+  if (!preset) return;
+  state.linksConfig = state.linksConfig || {};
+  state.linksConfig.dineinPlatforms = getDineinPlatforms();
+  state.linksConfig.dineinPlatforms.push({ id: preset.id, name: preset.name, emoji: preset.emoji, url: "", enabled: true, btnClass: preset.btnClass });
+  renderDineinPlatformsList();
+}
+function addDineinPlatform() {
+  state.linksConfig = state.linksConfig || {};
+  state.linksConfig.dineinPlatforms = getDineinPlatforms();
+  state.linksConfig.dineinPlatforms.push({ id: "custom_" + Date.now(), name: "", emoji: "🔗", url: "", enabled: true, btnClass: "" });
+  renderDineinPlatformsList();
+}
+function updateDineinPlatform(i, key, val) {
+  const plats = getDineinPlatforms();
+  if (plats[i]) plats[i][key] = val;
+  state.linksConfig.dineinPlatforms = plats;
+}
+function removeDineinPlatform(i) {
+  state.linksConfig.dineinPlatforms.splice(i, 1);
+  renderDineinPlatformsList();
+}
+function saveDineinPlatforms() {
+  saveState(); applyLinksConfig(); alert("Dine-in links saved!");
+}
+
+// ---- Apply to public menu ----
+function applyLinksConfig() {
+  const lc = state.linksConfig || {};
+  const btnStyle = lc.style || "pill";
+  const position = lc.position || "footer";
+  const styleClass = btnStyle === "pill" ? "style-pill" : btnStyle === "square" ? "style-square" : "";
+
+  // Location footer strip
+  const locStrip = document.getElementById("location-footer-strip");
+  if (lc.locationEnabled && lc.address) {
+    locStrip.style.display = "block";
+    document.getElementById("footer-location-address").textContent = lc.address;
+    const dirBtn = document.getElementById("footer-directions-btn");
+    dirBtn.href = lc.mapsUrl || ("https://maps.google.com/?q=" + encodeURIComponent(lc.address));
+    dirBtn.className = "ext-link-btn maps-btn " + styleClass;
+    dirBtn.innerHTML = getLogo("maps") + `<span id="footer-directions-label">${escHtml(lc.btnLabel || "Get Directions")}</span>`;
+    // Embedded map
+    const mapWrap  = document.getElementById("footer-map-wrap");
+    const mapFrame = document.getElementById("footer-map-iframe");
+    if (lc.embedUrl) {
+      mapWrap.style.display = "block";
+      if (mapFrame.src !== lc.embedUrl) mapFrame.src = lc.embedUrl;
+    } else {
+      mapWrap.style.display = "none";
+    }
+  } else {
+    locStrip.style.display = "none";
+  }
+
+  // Build logo button HTML helper
+  function buildBtns(platforms) {
+    return (platforms || []).filter(p => p.enabled !== false && p.url).map(p =>
+      `<a href="${escHtml(p.url)}" target="_blank" rel="noopener" class="ext-link-btn ${escHtml(p.btnClass||'')} ${styleClass}">${getLogo(p.id)}${escHtml(p.name)}</a>`
+    ).join("");
+  }
+
+  const deliveryBtns = buildBtns(getDeliveryPlatforms());
+  const dineinBtns   = buildBtns(getDineinPlatforms());
+
+  // Footer delivery
+  const dfWrap = document.getElementById("delivery-footer-wrap");
+  const diWrap = document.getElementById("dinein-footer-wrap");
+  if ((position === "footer" || position === "both") && deliveryBtns) {
+    dfWrap.style.display = "block";
+    document.getElementById("delivery-footer-btns").innerHTML = deliveryBtns;
+  } else { dfWrap.style.display = "none"; }
+
+  if ((position === "footer" || position === "both") && dineinBtns) {
+    diWrap.style.display = "block";
+    document.getElementById("dinein-footer-btns").innerHTML = dineinBtns;
+  } else { diWrap.style.display = "none"; }
+
+  // Share bar row
+  const sbRow = document.getElementById("ext-links-sharebar-row");
+  const sbBtns = deliveryBtns + dineinBtns;
+  if ((position === "sharebar" || position === "both") && sbBtns) {
+    sbRow.style.display = "flex";
+    sbRow.innerHTML = `<span style="font-size:12px;color:var(--text2);">Order / Reserve:</span>` + sbBtns;
+  } else {
+    sbRow.style.display = "none";
+  }
+}
+
+// ====================================================
 // UTILS
 // ====================================================
 function escHtml(str) {
@@ -2254,8 +2779,10 @@ function initScrollSpy() {
 // ====================================================
 loadState();
 applyTheme(state.theme || "dark");
+applyBrowserIdentity();
 renderMenu();
 applyFeatureToggles();
+applyLinksConfig();
 setTimeout(initScrollSpy, 200);
 
 // Auto-connect Firebase — prefers HARDCODED_FIREBASE_CONFIG if filled in,
