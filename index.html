@@ -1931,7 +1931,8 @@ function showQrModal() {
   const url = window.location.href + window.location.pathname;
   // We'll draw it in a temp div then copy to canvas
   const tmp = document.createElement("div");
-  tmp.style.display = "none";
+  tmp.style.position = "absolute";
+  tmp.style.left = "-9999px";
   document.body.appendChild(tmp);
   try {
     new QRCode(tmp, {
