@@ -623,6 +623,7 @@
   .qr-box h3 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
   .qr-box p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
   #qr-canvas { border-radius: 12px; background: white; padding: 12px; display: block; margin: 0 auto 20px; }
+  #qr-render-box { border-radius: 12px; background: white; padding: 12px; display: inline-flex; align-items:center; justify-content:center; margin: 0 auto 14px; }
 
   /* Admin feature toggles */
   .feature-toggle-row {
@@ -765,6 +766,15 @@
     </div>
   </div>
 
+  <!-- Announcement Banner -->
+  <div id="announcement-banner" style="display:none;padding:10px 24px;text-align:center;font-size:13px;font-weight:500;letter-spacing:0.02em;"></div>
+
+  <!-- Table Number Input -->
+  <div id="table-input-bar" style="display:none;padding:8px 24px;background:var(--bg2);border-bottom:1px solid var(--border);display:none;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+    <label style="font-size:12px;color:var(--text2);">Table Number:</label>
+    <input type="number" id="table-number-input" min="1" placeholder="e.g. 5" style="width:80px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--btn-radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;" oninput="saveTableNumber(this.value)">
+  </div>
+
   <!-- Share Bar (shown if enabled by admin) -->
   <div class="share-bar" id="share-bar" style="display:none">
     <span style="font-size:12px;color:var(--text2);margin-right:4px">Share:</span>
@@ -793,18 +803,20 @@
 
   <footer class="menu-footer">
     <div id="footer-info"></div>
-    <div style="margin-top:8px">Powered by <strong>Tarun's Websites</strong></div>
+    <div id="social-links-footer" style="display:none;margin-top:10px;display:none;gap:16px;justify-content:center;align-items:center;"></div>
+    <div id="powered-by-footer" style="margin-top:8px">Powered by <strong>Tarun's Websites</strong></div>
   </footer>
 </div>
 
 <!-- ====== QR MODAL ====== -->
 <div id="qr-modal-overlay">
   <div class="qr-box">
-    <h3>Scan to Open Menu</h3>
-    <p>Share this QR code with your guests</p>
-    <canvas id="qr-canvas" width="200" height="200"></canvas>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-primary" onclick="downloadQR()">Download QR</button>
+    <h3 id="qr-modal-title">Scan to Open Menu</h3>
+    <p id="qr-modal-subtitle">Share this QR code with your guests</p>
+    <div id="qr-render-box" style="display:flex;align-items:center;justify-content:center;min-height:224px;"></div>
+    <div id="qr-url-label" style="font-size:11px;color:var(--text2);word-break:break-all;margin-bottom:14px;padding:0 8px;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="downloadQR()">⬇ Download QR</button>
       <button class="btn btn-ghost" onclick="closeQrModal()">Close</button>
     </div>
   </div>
@@ -978,6 +990,125 @@
           <span class="toggle-slider"></span>
         </label>
       </div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          Announcement Banner
+          <span>Shows a top banner with a custom message (offers, alerts, etc.)</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-announcement" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          Table Number Input
+          <span>Lets guests enter their table number — shown in the WhatsApp share message</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-table" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          Social Links in Footer
+          <span>Show Instagram / Facebook links at the bottom of the menu</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-social" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="feature-toggle-row">
+        <div class="feature-toggle-label">
+          Show "Powered by" Footer Text
+          <span>Displays the branding footer (Tarun's Websites)</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-poweredby" onchange="saveFeatureToggles()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <hr class="divider">
+      <!-- WhatsApp Customization -->
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">💬 WhatsApp Customization</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Customize the message sent when guests tap the WhatsApp share button.</div>
+      <div class="form-row">
+        <label>WhatsApp Phone Number (optional)</label>
+        <input type="text" id="wa-phone" placeholder="+91 9876543210 — if set, opens direct chat instead of share">
+      </div>
+      <div class="form-row">
+        <label>Custom Share Message</label>
+        <textarea id="wa-message" rows="3" placeholder="Check out our menu 🍽️ — {url}"></textarea>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">Use <strong>{url}</strong> for the menu link, <strong>{name}</strong> for restaurant name, <strong>{table}</strong> for table number (if enabled).</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveWhatsAppCustomization()">Save WhatsApp Settings</button>
+
+      <hr class="divider">
+      <!-- QR Customization -->
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">📱 QR Code Customization</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Customize the look and URL of the QR code.</div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>QR Foreground Color</label>
+          <input type="color" id="qr-color-dark" value="#000000" style="height:42px;padding:4px 8px;cursor:pointer;">
+        </div>
+        <div class="form-row">
+          <label>QR Background Color</label>
+          <input type="color" id="qr-color-light" value="#ffffff" style="height:42px;padding:4px 8px;cursor:pointer;">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>QR Modal Title</label>
+        <input type="text" id="qr-title" placeholder="Scan to Open Menu">
+      </div>
+      <div class="form-row">
+        <label>QR Modal Subtitle</label>
+        <input type="text" id="qr-subtitle" placeholder="Share this QR code with your guests">
+      </div>
+      <div class="form-row">
+        <label>Custom URL (leave blank to use current page URL)</label>
+        <input type="url" id="qr-custom-url" placeholder="https://yourrestaurant.com/menu">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveQRCustomization()">Save QR Settings</button>
+
+      <hr class="divider">
+      <!-- Announcement Customization -->
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">📣 Announcement Banner</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Shown at the top of the public menu when enabled above.</div>
+      <div class="form-row">
+        <label>Banner Message</label>
+        <input type="text" id="announcement-text" placeholder="🎉 Happy Hours 5–8pm — 20% off all drinks!">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Background Color</label>
+          <input type="color" id="announcement-bg" value="#c8933a" style="height:42px;padding:4px 8px;cursor:pointer;">
+        </div>
+        <div class="form-row">
+          <label>Text Color</label>
+          <input type="color" id="announcement-fg" value="#ffffff" style="height:42px;padding:4px 8px;cursor:pointer;">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveAnnouncementSettings()">Save Banner</button>
+
+      <hr class="divider">
+      <!-- Social Links -->
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">🔗 Social Links</div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Instagram URL</label>
+          <input type="url" id="social-instagram" placeholder="https://instagram.com/yourpage">
+        </div>
+        <div class="form-row">
+          <label>Facebook URL</label>
+          <input type="url" id="social-facebook" placeholder="https://facebook.com/yourpage">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveSocialLinks()">Save Social Links</button>
+
       <hr class="divider">
       <div class="form-row">
         <label>Export Menu Data (JSON)</label>
@@ -1884,12 +2015,16 @@ function addPricingOption() {
 }
 
 // ====================================================
-// FEATURE TOGGLES (WhatsApp + QR)
+// FEATURE TOGGLES (WhatsApp + QR + New Features)
 // ====================================================
 function saveFeatureToggles() {
   state.features = state.features || {};
   state.features.whatsapp = document.getElementById("toggle-whatsapp").checked;
   state.features.qr = document.getElementById("toggle-qr").checked;
+  state.features.announcement = document.getElementById("toggle-announcement").checked;
+  state.features.table = document.getElementById("toggle-table").checked;
+  state.features.social = document.getElementById("toggle-social").checked;
+  state.features.poweredby = document.getElementById("toggle-poweredby").checked;
   saveState();
   applyFeatureToggles();
 }
@@ -1903,73 +2038,191 @@ function applyFeatureToggles() {
   sharebar.style.display = showBar ? "flex" : "none";
   waBtn.style.display = f.whatsapp ? "inline-flex" : "none";
   qrBtn.style.display = f.qr ? "inline-flex" : "none";
+
+  // Announcement banner
+  const banner = document.getElementById("announcement-banner");
+  const ac = state.announcementConfig || {};
+  if (f.announcement && ac.text) {
+    banner.style.display = "block";
+    banner.style.background = ac.bg || "#c8933a";
+    banner.style.color = ac.fg || "#ffffff";
+    banner.textContent = ac.text;
+  } else {
+    banner.style.display = "none";
+  }
+
+  // Table number bar
+  const tableBar = document.getElementById("table-input-bar");
+  tableBar.style.display = f.table ? "flex" : "none";
+
+  // Social links footer
+  const socialFooter = document.getElementById("social-links-footer");
+  const sc = state.socialConfig || {};
+  if (f.social && (sc.instagram || sc.facebook)) {
+    socialFooter.style.display = "flex";
+    socialFooter.innerHTML = [
+      sc.instagram ? `<a href="${escHtml(sc.instagram)}" target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none;">📸 Instagram</a>` : "",
+      sc.facebook  ? `<a href="${escHtml(sc.facebook)}"  target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none;">👍 Facebook</a>` : ""
+    ].join("");
+  } else {
+    socialFooter.style.display = "none";
+  }
+
+  // Powered-by footer
+  const pb = document.getElementById("powered-by-footer");
+  pb.style.display = (f.poweredby === false) ? "none" : "block";
 }
 
 function renderFeatureToggles() {
   const f = state.features || {};
-  const waEl = document.getElementById("toggle-whatsapp");
-  const qrEl = document.getElementById("toggle-qr");
-  if (waEl) waEl.checked = !!f.whatsapp;
-  if (qrEl) qrEl.checked = !!f.qr;
+  const ids = ["toggle-whatsapp","toggle-qr","toggle-announcement","toggle-table","toggle-social","toggle-poweredby"];
+  const keys = ["whatsapp","qr","announcement","table","social","poweredby"];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = (keys[i] === "poweredby") ? (f.poweredby !== false) : !!f[keys[i]];
+  });
+  // Populate customization forms
+  const wc = state.whatsappConfig || {};
+  const qc = state.qrConfig || {};
+  const ac = state.announcementConfig || {};
+  const sc = state.socialConfig || {};
+  if (document.getElementById("wa-phone")) {
+    document.getElementById("wa-phone").value = wc.phone || "";
+    document.getElementById("wa-message").value = wc.message || "";
+    document.getElementById("qr-color-dark").value = qc.colorDark || "#000000";
+    document.getElementById("qr-color-light").value = qc.colorLight || "#ffffff";
+    document.getElementById("qr-title").value = qc.title || "";
+    document.getElementById("qr-subtitle").value = qc.subtitle || "";
+    document.getElementById("qr-custom-url").value = qc.customUrl || "";
+    document.getElementById("announcement-text").value = ac.text || "";
+    document.getElementById("announcement-bg").value = ac.bg || "#c8933a";
+    document.getElementById("announcement-fg").value = ac.fg || "#ffffff";
+    document.getElementById("social-instagram").value = sc.instagram || "";
+    document.getElementById("social-facebook").value = sc.facebook || "";
+  }
+}
+
+function saveWhatsAppCustomization() {
+  state.whatsappConfig = {
+    phone:   document.getElementById("wa-phone").value.trim(),
+    message: document.getElementById("wa-message").value.trim(),
+  };
+  saveState();
+  alert("WhatsApp settings saved!");
+}
+
+function saveQRCustomization() {
+  state.qrConfig = {
+    colorDark:  document.getElementById("qr-color-dark").value,
+    colorLight: document.getElementById("qr-color-light").value,
+    title:      document.getElementById("qr-title").value.trim(),
+    subtitle:   document.getElementById("qr-subtitle").value.trim(),
+    customUrl:  document.getElementById("qr-custom-url").value.trim(),
+  };
+  saveState();
+  alert("QR settings saved!");
+}
+
+function saveAnnouncementSettings() {
+  state.announcementConfig = {
+    text: document.getElementById("announcement-text").value.trim(),
+    bg:   document.getElementById("announcement-bg").value,
+    fg:   document.getElementById("announcement-fg").value,
+  };
+  saveState();
+  applyFeatureToggles();
+  alert("Announcement banner saved!");
+}
+
+function saveSocialLinks() {
+  state.socialConfig = {
+    instagram: document.getElementById("social-instagram").value.trim(),
+    facebook:  document.getElementById("social-facebook").value.trim(),
+  };
+  saveState();
+  applyFeatureToggles();
+  alert("Social links saved!");
+}
+
+function saveTableNumber(val) {
+  try { sessionStorage.setItem("tableNumber", val); } catch(e) {}
+}
+function getTableNumber() {
+  try { return sessionStorage.getItem("tableNumber") || ""; } catch(e) { return ""; }
 }
 
 function shareWhatsApp() {
-  const url = encodeURIComponent(window.location.href);
-  const name = encodeURIComponent((state.branding && state.branding.name) || "our menu");
-  window.open(`https://wa.me/?text=Check%20out%20${name}%20%F0%9F%8D3%0A${url}`, "_blank");
+  const wc = state.whatsappConfig || {};
+  const name = (state.branding && state.branding.name) || "our menu";
+  const url  = window.location.href;
+  const table = getTableNumber();
+  let msg = wc.message || "Check out {name} 🍽️\n{url}";
+  msg = msg.replace(/\{url\}/g, url)
+           .replace(/\{name\}/g, name)
+           .replace(/\{table\}/g, table ? "Table " + table : "");
+  msg = encodeURIComponent(msg.trim());
+  const phone = (wc.phone || "").replace(/[^0-9+]/g, "");
+  if (phone) {
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+  } else {
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
+  }
 }
 
-// QR Modal
-let qrInstance = null;
+// ====== QR MODAL — mobile-compatible ======
 function showQrModal() {
   const overlay = document.getElementById("qr-modal-overlay");
   overlay.classList.add("open");
-  const canvas = document.getElementById("qr-canvas");
-  // Clear previous
-  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-  // Use qrcode.js to draw on canvas
-  const url = window.location.href + window.location.pathname;
-  // We'll draw it in a temp div then copy to canvas
-  const tmp = document.createElement("div");
-  tmp.style.position = "absolute";
-  tmp.style.left = "-9999px";
-  document.body.appendChild(tmp);
+
+  const qc = state.qrConfig || {};
+  const titleEl = document.getElementById("qr-modal-title");
+  const subEl   = document.getElementById("qr-modal-subtitle");
+  const urlEl   = document.getElementById("qr-url-label");
+  const box     = document.getElementById("qr-render-box");
+
+  if (titleEl) titleEl.textContent = qc.title || "Scan to Open Menu";
+  if (subEl)   subEl.textContent   = qc.subtitle || "Share this QR code with your guests";
+
+  const qrUrl = (qc.customUrl && qc.customUrl.trim()) ? qc.customUrl.trim() : window.location.href;
+  if (urlEl) urlEl.textContent = qrUrl;
+  box.innerHTML = "";
+
+  // Use QRCode.js directly into the render box — works on mobile
   try {
-    new QRCode(tmp, {
-      text: url,
+    new QRCode(box, {
+      text: qrUrl,
       width: 200,
       height: 200,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
+      colorDark:  qc.colorDark  || "#000000",
+      colorLight: qc.colorLight || "#ffffff",
       correctLevel: QRCode.CorrectLevel.H
     });
-    setTimeout(() => {
-      const img = tmp.querySelector("img") || tmp.querySelector("canvas");
-      if (img) {
-        const ctx = canvas.getContext("2d");
-        if (img.tagName === "CANVAS") {
-          ctx.drawImage(img, 0, 0, 200, 200);
-        } else {
-          const i = new Image();
-          i.onload = () => ctx.drawImage(i, 0, 0, 200, 200);
-          i.src = img.src;
-        }
-      }
-      document.body.removeChild(tmp);
-    }, 100);
   } catch(e) {
-    document.body.removeChild(tmp);
+    box.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:20px;">Could not generate QR code.</div>';
   }
 }
+
 function closeQrModal() {
   document.getElementById("qr-modal-overlay").classList.remove("open");
 }
+
 function downloadQR() {
-  const canvas = document.getElementById("qr-canvas");
+  const box = document.getElementById("qr-render-box");
+  // qrcode.js may render an <img> or <canvas> depending on the browser
+  const canvas = box.querySelector("canvas");
+  const img    = box.querySelector("img");
   const a = document.createElement("a");
   a.download = "menu-qr.png";
-  a.href = canvas.toDataURL("image/png");
-  a.click();
+  if (canvas) {
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  } else if (img) {
+    // For mobile where qrcode.js renders an <img>
+    a.href = img.src;
+    a.click();
+  } else {
+    alert("QR not ready yet. Please wait and try again.");
+  }
 }
 
 // ====================================================
@@ -2002,6 +2255,7 @@ function initScrollSpy() {
 loadState();
 applyTheme(state.theme || "dark");
 renderMenu();
+applyFeatureToggles();
 setTimeout(initScrollSpy, 200);
 
 // Auto-connect Firebase — prefers HARDCODED_FIREBASE_CONFIG if filled in,
