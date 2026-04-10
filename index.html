@@ -1928,7 +1928,7 @@ function showQrModal() {
   // Clear previous
   canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
   // Use qrcode.js to draw on canvas
-  const url = window.location.href;
+  const url = window.location.href + window.location.pathname;
   // We'll draw it in a temp div then copy to canvas
   const tmp = document.createElement("div");
   tmp.style.display = "none";
